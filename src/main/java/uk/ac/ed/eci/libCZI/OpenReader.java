@@ -56,9 +56,7 @@ public class OpenReader {
             if (errorCode != 0) {                
                 return new SubBlockStatistics(0, 0, 0, nullRect, nullRect, null);
             }
-            int subBlockCount = simpleStatsStruct.get(JAVA_INT,
-                    SubBlockStatistics.layout().byteOffset(PathElement.groupElement("sub_block_count")));
-            return new SubBlockStatistics(subBlockCount, 0, 0, nullRect, nullRect, null);                    
+            return SubBlockStatistics.createFromMemorySegment(simpleStatsStruct);
         } catch(Throwable e) {
             throw new RuntimeException("Failed to call native function libCZI_ReaderGetStatisticsSimple", e);            
         }
