@@ -90,6 +90,24 @@
           <executions>
             <execution>
               <?m2e execute onConfiguration,onIncremental?>
+              <id>download-test-image</id>
+              <phase>generate-test-resources</phase>
+              <goals>
+                <goal>run</goal>
+              </goals>
+              <configuration>
+                <target>
+                  <mkdir dir="${project.basedir}/test-images"/>
+                  <get src="https://openslide.cs.cmu.edu/download/openslide-testdata/Zeiss/Zeiss-5-JXR.czi" 
+                       dest="${project.basedir}/test-images/test-image.czi" 
+                       skipexisting="true"
+                       verbose="true"/>
+                  <echo>Test image is available at ${project.basedir}/test-images/test-image.czi</echo>
+                </target>
+              </configuration>
+            </execution>
+            <execution>
+              <?m2e execute onConfiguration,onIncremental?>
               <id>build-native</id>
               <phase>generate-resources</phase> <!-- Or an appropriate phase, like "compile" -->
               <goals>
