@@ -1,4 +1,4 @@
-package uk.ac.ed.eci;
+package uk.ac.ed.eci.libCZI;
 
 import java.lang.foreign.Arena;
 import java.lang.foreign.FunctionDescriptor;
@@ -13,8 +13,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.UUID;
 
-import uk.ac.ed.eci.libCZI.NativeUtils;
-
 import static java.lang.foreign.ValueLayout.ADDRESS;
 import static java.lang.foreign.ValueLayout.JAVA_BOOLEAN;
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
@@ -23,11 +21,11 @@ import static java.lang.foreign.ValueLayout.JAVA_LONG;
 
 import java.io.IOException;
 
-class LibCziFFM {
+public class LibCziFFM {
     // A global, shared arena for loading the library. It lives for the duration of
     // the application.
     private static final Arena GLOBAL_ARENA = Arena.ofAuto();
-    private static final SymbolLookup SYMBOL_LOOKUP = getSymbolLookup();
+    public static final SymbolLookup SYMBOL_LOOKUP = getSymbolLookup();
     private static final int K_MAX_DIMENSION_COUNT = 9;
     private static final int K_MIN_DIMENSION_COUNT = 1;
 
