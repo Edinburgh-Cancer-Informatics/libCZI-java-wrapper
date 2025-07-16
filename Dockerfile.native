@@ -1,0 +1,12 @@
+FROM photon:5.0 AS build-env
+
+WORKDIR /build
+RUN tdnf --assumeyes upgrade && tdnf --assumeyes install zlib-devel libpng-devel rapidjson-devel openssl-devel build-essential cmake git icu shadow
+RUN useradd -u 1000 -d /build -m -U -s /bin/false builder
+RUN chown builder.builder /build
+USER builder
+
+RUN git clone https://github.com/ZEISS/libczi.git && \ 
+  cmake libczi -DLIBCZI_BUILD_UNITTESTS=OFF -DCMAKE_INSTALL_PREFIX=/build/czi -DLIBCZI_BUILD_LIBCZIAPI=ON && \ 
+  cmake --build . && \ 
+  cmake --install .
