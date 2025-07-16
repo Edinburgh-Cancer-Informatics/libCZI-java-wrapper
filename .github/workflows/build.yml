@@ -18,10 +18,17 @@ jobs:
           java-version: '22'
           distribution: 'temurin'
           cache: maven
-      - name: Build with Maven
+      - name: Build and Test with Maven
         run: mvn clean install
+      - name: Upload Test Reports on Failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: target/surefire-reports/
       - name: Upload Build Artifact
+        # This step will only run if the build and tests succeed
         uses: actions/upload-artifact@v4
         with:
           name: libczi-wrapper
-          path: target/*.jar  # Or the path to your packaged artifact
+          path: target/*.jar
