@@ -26,8 +26,8 @@ public class LibCziFFM {
     // the application.
     private static final Arena GLOBAL_ARENA = Arena.ofAuto();
     public static final SymbolLookup SYMBOL_LOOKUP = getSymbolLookup();
-    private static final int K_MAX_DIMENSION_COUNT = 9;
-    private static final int K_MIN_DIMENSION_COUNT = 1;
+    public static final int K_MAX_DIMENSION_COUNT = 9;
+    public static final int K_MIN_DIMENSION_COUNT = 1;
 
     private static SymbolLookup getSymbolLookup() {
         String libName = System.mapLibraryName("CZIAPI");

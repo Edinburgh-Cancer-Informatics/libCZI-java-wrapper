@@ -42,7 +42,7 @@ public class CZIInputStream {
         return streamResult.errorCode();
     }
 
-    public Object stream() {
+    public MemorySegment stream() {
         return streamResult.stream();
     }
     
