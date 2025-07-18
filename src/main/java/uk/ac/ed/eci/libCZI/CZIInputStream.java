@@ -52,7 +52,7 @@ public class CZIInputStream implements AutoCloseable {
      */
     public static CZIInputStream createInputStreamFromFileUTF8(String string) {
         FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS);
-        MethodHandle createInputStream = LibCziFFM.getMethodHandle(string, descriptor);
+        MethodHandle createInputStream = LibCziFFM.getMethodHandle("libCZI_CreateInputStreamFromFileUTF8", descriptor);
         try (Arena arena = Arena.ofConfined()) {
             MemorySegment filenameSegment = arena.allocateFrom(string);
             MemorySegment pStream = arena.allocate(ADDRESS);

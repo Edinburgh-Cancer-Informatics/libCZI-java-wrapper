@@ -29,70 +29,42 @@ import static java.lang.foreign.ValueLayout.*;
 import java.lang.foreign.Arena;
 
 public class CziStreamReader implements AutoCloseable {
-    private ReaderResult readerResult;
-
-    public class ReaderResult {
-        public int errorCode;
-        public MemorySegment reader;
-
-        public ReaderResult(int errorCode, MemorySegment reader) {
-            this.errorCode = errorCode;
-            this.reader = reader;
-        }
-    }
+    private MemorySegment readerHandle;
 
     public static CziStreamReader fromStream(CZIInputStream streamResult) {
         return new CziStreamReader(streamResult);
     }
 
-    private CziStreamReader(CZIInputStream streamResult) {
-        createReader();
-        readerOpen(streamResult);
-    }
-
-    public Integer errorCode() {
-        return readerResult.errorCode;
-    }
-
-    public MemorySegment reader() {
-        return readerResult.reader;
+    private CziStreamReader(CZIInputStream inputStream) {
+        readerHandle = createReader();
+        try {
+            openReaderWithStream(inputStream);
+        } catch (Exception e) {
+            releaseReader();
+            throw e;
+        }
     }
 
     public SubBlockStatistics simpleReaderStatistics() {
-        IntRect nullRect = new IntRect(0, 0, 0, 0);
         FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS);
 
         MethodHandle getStats = LibCziFFM.getMethodHandle("libCZI_ReaderGetStatisticsSimple", descriptor);
         try (Arena arena = Arena.ofConfined()) {
             MemorySegment simpleStatsStruct = arena.allocate(SubBlockStatistics.layout());
-            int errorCode = (int) getStats.invokeExact(readerResult.reader, simpleStatsStruct);
+            int errorCode = (int) getStats.invokeExact(readerHandle, simpleStatsStruct);
             if (errorCode != 0) {
-                return new SubBlockStatistics(0, 0, 0, nullRect, nullRect, null);
+                throw new CziReaderException("Failed to get simple reader statistics. Error code: " + errorCode);
             }
             return SubBlockStatistics.createFromMemorySegment(simpleStatsStruct);
         } catch (Throwable e) {
-            throw new RuntimeException("Failed to call native function libCZI_ReaderGetStatisticsSimple", e);
-        }
-    }
-
-    private void createReader() {
-        FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS);
-        MethodHandle createReader = LibCziFFM.getMethodHandle("libCZI_CreateReader", descriptor);
-        try (Arena arena = Arena.ofConfined()) {
-            MemorySegment pReader = arena.allocate(ADDRESS);
-            int errorCode = (int) createReader.invokeExact(pReader);
-            if (errorCode != 0) {
-                readerResult = new ReaderResult(errorCode, MemorySegment.NULL);
-            } else {
-                MemorySegment readerHandle = pReader.get(ADDRESS, 0);
-                readerResult = new ReaderResult(errorCode, readerHandle);
+            if (e instanceof CziReaderException) {
+                throw (CziReaderException) e;
             }
-        } catch (Throwable e) {
-            throw new RuntimeException("Failed to call native function libCZI_CreateReader", e);
+            throw new CziReaderException("Failed to call native function libCZI_ReaderGetStatisticsSimple", e);
         }
     }
 
-    private void readerOpen(CZIInputStream inputStream) {
+    private void openReaderWithStream(CZIInputStream inputStream) {
         MemoryLayout readerOpenInfoLayout = MemoryLayout.structLayout(
                 ADDRESS.withName("stream_object"));
 
@@ -101,9 +73,15 @@ public class CziStreamReader implements AutoCloseable {
         try (Arena arena = Arena.ofConfined()) {
             MemorySegment openInfoStruct = arena.allocate(readerOpenInfoLayout);
             openInfoStruct.set(ADDRESS, 0, inputStream.stream());
-            readerResult.errorCode = (int) openReader.invokeExact(readerResult.reader, openInfoStruct);
+            int errorCode = (int) openReader.invokeExact(readerHandle, openInfoStruct);
+            if (errorCode != 0) {
+                throw new CziReaderException("Failed to open CZI stream with reader. Error code: " + errorCode);
+            }
         } catch (Throwable e) {
-            throw new RuntimeException("Failed to call native function libCZI_ReaderOpen", e);
+            if (e instanceof CziReaderException) {
+                throw (CziReaderException) e;
+            }
+            throw new CziReaderException("Failed to call native function libCZI_ReaderOpen", e);
         }
     }
 
@@ -112,12 +90,11 @@ public class CziStreamReader implements AutoCloseable {
         MethodHandle getAttachmentCount = LibCziFFM.getMethodHandle("libCZI_ReaderGetAttachmentCount", descriptor);
         try (Arena arena = Arena.ofConfined()) {
             MemorySegment pCount = arena.allocate(JAVA_INT);
-            int errorCode = (int) getAttachmentCount.invokeExact(readerResult.reader, pCount);
+            int errorCode = (int) getAttachmentCount.invokeExact(readerHandle, pCount);
             if (errorCode != 0) {
-                return 0;
+                throw new CziReaderException("Failed to get attachment count. Error code: " + errorCode);
             }
-            int count = pCount.get(JAVA_INT, 0);
-            return count;
+            return pCount.get(JAVA_INT, 0);
         } catch (Throwable e) {
             throw new RuntimeException("Failed to call native function libCZI_ReaderGetAttachmentCount");
         }
@@ -132,15 +109,32 @@ public class CziStreamReader implements AutoCloseable {
         return attachments;
     }
 
+    private MemorySegment createReader() {
+        FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS);
+        MethodHandle createReader = LibCziFFM.getMethodHandle("libCZI_CreateReader", descriptor);
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment pReader = arena.allocate(ADDRESS);
+            int errorCode = (int) createReader.invokeExact(pReader);
+            if (errorCode != 0) {
+                throw new CziReaderException("Failed to create CZI reader. Error code: " + errorCode);
+            } else {
+                MemorySegment readerHandle = pReader.get(ADDRESS, 0);
+                return readerHandle;
+            }
+        } catch (Throwable e) {
+            throw new RuntimeException("Failed to call native function libCZI_CreateReader", e);
+        }
+    }
+
     private AttachmentInfo getAttachmentInfo(int index) {
         FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_INT, ADDRESS);
         MethodHandle getAttachmentInfo = LibCziFFM.getMethodHandle("libCZI_ReaderGetAttachmentInfoFromDirectory",
                 descriptor);
         try (Arena arena = Arena.ofConfined()) {
             MemorySegment attachmentInfoStruct = arena.allocate(AttachmentInfo.layout());
-            int errorCode = (int) getAttachmentInfo.invokeExact(readerResult.reader, index, attachmentInfoStruct);
+            int errorCode = (int) getAttachmentInfo.invokeExact(readerHandle, index, attachmentInfoStruct);
             if (errorCode != 0) {
-                return null;
+                throw new CziReaderException("Failed to get attachment info. Error code: " + errorCode);
             }
             return AttachmentInfo.createFromMemorySegment(attachmentInfoStruct);
         } catch (Throwable e) {
@@ -148,14 +142,18 @@ public class CziStreamReader implements AutoCloseable {
         }
     }
 
-    @Override
-    public void close() throws Exception {
+    private void releaseReader() {
         FunctionDescriptor descriptor = FunctionDescriptor.ofVoid(ADDRESS);
         MethodHandle release = LibCziFFM.getMethodHandle("libCZI_ReleaseReader", descriptor);
         try {
-            release.invokeExact(readerResult.reader);
+            release.invokeExact(readerHandle);
         } catch (Throwable e) {
             throw new RuntimeException("Failed to call native function libCZI_ReleaseReader", e);
         }
+    }
+
+    @Override
+    public void close() throws Exception {
+        releaseReader();
     }
 }

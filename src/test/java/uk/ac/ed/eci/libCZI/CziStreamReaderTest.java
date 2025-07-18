@@ -35,8 +35,7 @@ public class CziStreamReaderTest {
 
     @Test
     public void testOpenReaderFromFileStream() {
-        assertEquals(0, reader.errorCode(), "Should open reader without error.");
-        assertNotNull(reader.reader(), "Reader handle should not be null.");
+        assertNotNull(reader, "Reader handle should not be null.");
     }
 
     @Test
