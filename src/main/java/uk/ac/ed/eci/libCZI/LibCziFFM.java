@@ -1,6 +1,5 @@
 package uk.ac.ed.eci.libCZI;
 
-import java.lang.foreign.Arena;
 import java.lang.foreign.FunctionDescriptor;
 import java.lang.foreign.Linker;
 import java.lang.foreign.MemorySegment;
