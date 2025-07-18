@@ -11,8 +11,8 @@ import java.lang.foreign.Arena;
 
 public class CZIInputStream implements AutoCloseable {
 
-    private LibCziFFM.InputStreamResult streamResult;
-    protected CZIInputStream(LibCziFFM.InputStreamResult streamResult) {
+    private InputStreamResult streamResult;
+    protected CZIInputStream(InputStreamResult streamResult) {
         this.streamResult = streamResult;
     }
 
@@ -29,10 +29,10 @@ public class CZIInputStream implements AutoCloseable {
             MemorySegment pStream = arena.allocate(ADDRESS);
             int errorCode = (int) createInputStream.invokeExact(filenameSegment, pStream);
             if (errorCode != 0) {
-                return new CZIInputStream(new LibCziFFM.InputStreamResult(errorCode, MemorySegment.NULL));
+                return new CZIInputStream(new InputStreamResult(errorCode, MemorySegment.NULL));
             }
             MemorySegment streamHandle = pStream.get(ADDRESS, 0);   
-            return new CZIInputStream(new LibCziFFM.InputStreamResult(errorCode, streamHandle));
+            return new CZIInputStream(new InputStreamResult(errorCode, streamHandle));
         } catch (Throwable e) {
             throw new RuntimeException("Failed to call native function libCZI_CreateInputStreamFromFileUTF8", e);
         }
