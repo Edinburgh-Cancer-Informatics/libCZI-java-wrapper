@@ -7,6 +7,20 @@ import java.util.UUID;
 
 import static java.lang.foreign.ValueLayout.*;
 
+/**
+ * Represents information about an attachment within a CZI stream.
+ * This class provides access to the attachment's GUID, content file type, and name.
+ * It also handles memory management for the name string in case of overflow,
+ * freeing the native memory when the AttachmentInfo object is created.
+ * <p>
+ * This class is designed to mirror the `AttachmentInfoInterop` structure from the libCZI C API.
+ * </p>
+ * 
+ * @see <a href="https://zeiss.github.io/libczi/api/struct_attachment_info_interop.html#_CPPv421AttachmentInfoInterop">
+ * AttachmentInfoInterop
+ * </a>
+ * @author Paul Mitchell
+ */
 public class AttachmentInfo implements Comparable<AttachmentInfo> {
     private final UUID guid;
     private final String contentFileType;
@@ -51,14 +65,29 @@ public class AttachmentInfo implements Comparable<AttachmentInfo> {
         return new AttachmentInfo(uuid, contentFileType, name);
     }
 
+    /**
+     * Attachment GUID in UUID
+     * 
+     * @return the UUID of the attachment
+     */
     public UUID guid() {
         return guid;
     }
 
+    /**
+     * Content File Type
+     * 
+     * @return the name of the file type
+     */
     public String contentFileType() {
         return contentFileType;
     }
 
+    /**
+     * The name of the attachment, manages the oversize from the C API
+     * 
+     * @return the full file name
+     */
     public String name() {
         return name;
     }
@@ -68,3 +97,4 @@ public class AttachmentInfo implements Comparable<AttachmentInfo> {
         return this.name.compareTo(o.name);
     }
 }
+
