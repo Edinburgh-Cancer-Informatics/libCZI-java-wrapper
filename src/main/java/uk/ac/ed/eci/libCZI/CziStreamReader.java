@@ -5,6 +5,8 @@ import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
 import java.lang.invoke.MethodHandle;
 
+import javax.management.RuntimeErrorException;
+
 import static java.lang.foreign.ValueLayout.*;
 
 import java.lang.foreign.Arena;
@@ -86,5 +88,21 @@ public class CziStreamReader {
         } catch (Throwable e) {
             throw new RuntimeException("Failed to call native function libCZI_ReaderOpen", e);
         }        
+    }
+
+    public int attachmentCount() {
+        FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS);
+        MethodHandle getAttachmentCount = LibCziFFM.GetMethodHandle("libCZI_ReaderGetAttachmentCount", descriptor);
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment pCount = arena.allocate(JAVA_INT);
+            int errorCode = (int) getAttachmentCount.invokeExact(readerResult.reader, pCount);
+            if (errorCode != 0) {
+                return 0;
+            }
+            int count = pCount.get(JAVA_INT, 0);
+            return count;
+        } catch (Throwable e) {
+            throw new RuntimeException("Failed to call native function libCZI_ReaderGetAttachmentCount");
+        }
     }
 }

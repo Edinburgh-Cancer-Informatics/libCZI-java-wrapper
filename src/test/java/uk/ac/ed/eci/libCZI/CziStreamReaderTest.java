@@ -70,4 +70,16 @@ public class CziStreamReaderTest {
         assertEquals(0, stats.minMIndex());
         assertEquals(26, stats.maxMIndex());
     }
+
+    @Test
+    public void testAttachmentCount() {
+        assertTrue(Files.exists(TEST_IMAGE_PATH), "Test image should have been downloaded by Maven.");
+
+        CZIInputStream streamResult = CZIInputStream.createInputStreamFromFileUTF8(TEST_IMAGE_PATH.toString());
+        CziStreamReader reader = CziStreamReader.fromStream(streamResult);
+        assertNotNull(reader, "Reader should not be null.");
+        
+        int attachmentCount = reader.attachmentCount();
+        assertEquals(6, attachmentCount);
+    }
 }
