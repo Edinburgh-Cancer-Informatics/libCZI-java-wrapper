@@ -7,6 +7,23 @@ import java.lang.invoke.MethodHandle;
 
 import static java.lang.foreign.ValueLayout.*;
 
+/**
+ * Represents a CZI Attachment reader that provides method to interact with the files
+ * that are within the main file.  Currently, this is only via the RAW interface
+ * 
+ * <p>
+ * It acts as a wrapper around the native libCZI attachment reader functions, handling memory
+ * management and data conversion between Java and native types.
+ * </p>
+ * <p>
+ * Instances of this class should be create using the {@link #fromReader(CziStreamReader, int)}
+ * static method.  The reader should be closed after use to relase native resources
+ * idelly using a try-with-resources statement.
+ * </p>
+ * 
+ * @see CziStreamReader
+ * @author Paul Mitchell
+ */
 public class AttachmentReader implements AutoCloseable {
     private MemorySegment attachmentHandle;
     private MemorySegment readerHandle;
