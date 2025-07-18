@@ -7,7 +7,17 @@ import java.util.UUID;
 
 import static java.lang.foreign.ValueLayout.*;
 
-public record AttachmentInfo(UUID guid, String contentFileType, String name) {
+public class AttachmentInfo implements Comparable<AttachmentInfo> {
+    private final UUID guid;
+    private final String contentFileType;
+    private final String name;
+
+    public AttachmentInfo(UUID guid, String contentFileType, String name) {
+        this.guid = guid;
+        this.contentFileType = contentFileType;
+        this.name = name;
+    }
+
     public static MemoryLayout layout() {
         return MemoryLayout.structLayout(
                 MemoryLayout.sequenceLayout(16, JAVA_BYTE).withName("guid"),
@@ -39,5 +49,22 @@ public record AttachmentInfo(UUID guid, String contentFileType, String name) {
                     .getString(0);
         }
         return new AttachmentInfo(uuid, contentFileType, name);
+    }
+
+    public UUID guid() {
+        return guid;
+    }
+
+    public String contentFileType() {
+        return contentFileType;
+    }
+
+    public String name() {
+        return name;
+    }
+
+    @Override
+    public int compareTo(AttachmentInfo o) {
+        return this.name.compareTo(o.name);
     }
 }

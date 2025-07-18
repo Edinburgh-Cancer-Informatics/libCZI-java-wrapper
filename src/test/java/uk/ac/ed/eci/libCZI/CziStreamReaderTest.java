@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.UUID;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -82,6 +83,36 @@ public class CziStreamReaderTest {
         AttachmentInfo[] attachments = reader.getAttachments();
 
         assertNotNull(attachments, "Attachments should not be null.");
-        assertEquals(6, attachments.length);        
+        assertEquals(6, attachments.length);
+
+        AttachmentInfo fileDetails = attachments[0];
+        assertEquals(UUID.fromString("7C31DD48-5555-42F3-9225-4881DA8047F6"), fileDetails.guid());
+        assertEquals("CZEVL", fileDetails.contentFileType());
+        assertEquals("EventList", fileDetails.name());
+
+        AttachmentInfo timeStamps = attachments[1];
+        assertEquals(UUID.fromString("BD7D4E6F-B2A2-420C-BBD1-9282B8A89EE0"), timeStamps.guid());
+        assertEquals("CZTIMS", timeStamps.contentFileType());
+        assertEquals("TimeStamps", timeStamps.name());
+
+        AttachmentInfo label = attachments[2];
+        assertEquals(UUID.fromString("BF5AC657-B428-4071-9125-5341B84EF870"), label.guid());
+        assertEquals("CZI", label.contentFileType());
+        assertEquals("Label", label.name());
+
+        AttachmentInfo slidePreview = attachments[3];
+        assertEquals(UUID.fromString("F8A7F166-1692-4E5B-B881-432695115959"), slidePreview.guid());
+        assertEquals("CZI", slidePreview.contentFileType());
+        assertEquals("SlidePreview", slidePreview.name());
+
+        AttachmentInfo profile = attachments[4];
+        assertEquals(UUID.fromString("DF9C3F55-5844-4171-B234-8F69AFAB7F92"), profile.guid());
+        assertEquals("Zip-Comp", profile.contentFileType());
+        assertEquals("Profile", profile.name());
+
+        AttachmentInfo thumbnail = attachments[5];
+        assertEquals(UUID.fromString("6B28C19C-E75A-468D-935A-16A3194B3550"), thumbnail.guid());
+        assertEquals("JPG", thumbnail.contentFileType());
+        assertEquals("Thumbnail", thumbnail.name());
     }
 }
