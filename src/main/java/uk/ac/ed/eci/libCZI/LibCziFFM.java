@@ -13,6 +13,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.UUID;
 
+import uk.ac.ed.eci.libCZI.LibCziFFM.VersionInfo;
+
 import static java.lang.foreign.ValueLayout.ADDRESS;
 import static java.lang.foreign.ValueLayout.JAVA_BOOLEAN;
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
@@ -37,6 +39,15 @@ public class LibCziFFM {
         } catch (IOException e) {
             throw new UnsatisfiedLinkError("Count not liad CZI library from JAR: " + e.getMessage());
         }
+    }
+
+    public static MethodHandle GetMethodHandle(final String methodName, FunctionDescriptor descriptor) {
+        return Linker
+            .nativeLinker()
+            .downcallHandle(
+                SYMBOL_LOOKUP.find(methodName).orElseThrow(
+                    () -> new UnsatisfiedLinkError("Could not find symbol: " + methodName)),
+                descriptor);
     }
 
     /**

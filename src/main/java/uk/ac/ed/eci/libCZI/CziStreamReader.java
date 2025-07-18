@@ -1,9 +1,7 @@
 package uk.ac.ed.eci.libCZI;
 
 import java.lang.foreign.FunctionDescriptor;
-import java.lang.foreign.Linker;
 import java.lang.foreign.MemoryLayout;
-import java.lang.foreign.MemoryLayout.PathElement;
 import java.lang.foreign.MemorySegment;
 import java.lang.invoke.MethodHandle;
 
@@ -11,7 +9,7 @@ import static java.lang.foreign.ValueLayout.*;
 
 import java.lang.foreign.Arena;
 
-public class OpenReader {
+public class CziStreamReader {
     private ReaderResult readerResult;
 
     public class ReaderResult {
@@ -24,11 +22,11 @@ public class OpenReader {
         }
     }
 
-    public static OpenReader fromStream(CZIInputStream streamResult) {
-        return new OpenReader(streamResult);
+    public static CziStreamReader fromStream(CZIInputStream streamResult) {
+        return new CziStreamReader(streamResult);
     }
 
-    private OpenReader(CZIInputStream streamResult) {
+    private CziStreamReader(CZIInputStream streamResult) {
         createReader();
         readerOpen(streamResult);
     }
@@ -44,12 +42,8 @@ public class OpenReader {
     public SubBlockStatistics simpleReaderStatistics() {
         IntRect nullRect = new IntRect(0,0,0,0);
         FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS);
-        MethodHandle getStats = Linker.nativeLinker()
-                .downcallHandle(
-                        LibCziFFM.SYMBOL_LOOKUP.find("libCZI_ReaderGetStatisticsSimple").orElseThrow(
-                                () -> new UnsatisfiedLinkError(
-                                        "Could not find symbol: libCZI_ReaderGetStatisticsSimple")),
-                        descriptor);
+
+        MethodHandle getStats = LibCziFFM.GetMethodHandle("libCZI_ReaderGetStatisticsSimple", descriptor);
         try (Arena arena = Arena.ofConfined()) {
             MemorySegment simpleStatsStruct = arena.allocate(SubBlockStatistics.layout());
             int errorCode = (int) getStats.invokeExact(readerResult.reader, simpleStatsStruct);
@@ -64,12 +58,7 @@ public class OpenReader {
     
     private void createReader() {
         FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS);
-        MethodHandle createReader = Linker.nativeLinker()
-                .downcallHandle(
-                        LibCziFFM.SYMBOL_LOOKUP.find("libCZI_CreateReader").orElseThrow(
-                                () -> new UnsatisfiedLinkError(
-                                        "Could not find symbol: libCZI_CreateReader")),
-                        descriptor);
+        MethodHandle createReader = LibCziFFM.GetMethodHandle("libCZI_CreateReader", descriptor);
         try (Arena arena = Arena.ofConfined()) {
             MemorySegment pReader = arena.allocate(ADDRESS);
             int errorCode = (int) createReader.invokeExact(pReader);
@@ -89,12 +78,7 @@ public class OpenReader {
                 ADDRESS.withName("stream_object"));
 
         FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS);
-        MethodHandle openReader = Linker.nativeLinker()
-                .downcallHandle(
-                        LibCziFFM.SYMBOL_LOOKUP.find("libCZI_ReaderOpen").orElseThrow(
-                                () -> new UnsatisfiedLinkError(
-                                        "Could not find symbol: libCZI_CreateReader")),
-                        descriptor);
+        MethodHandle openReader = LibCziFFM.GetMethodHandle("libCZI_ReaderOpen", descriptor);
         try (Arena arena = Arena.ofConfined()) {
             MemorySegment openInfoStruct = arena.allocate(readerOpenInfoLayout);
             openInfoStruct.set(ADDRESS, 0, inputStream.stream());
