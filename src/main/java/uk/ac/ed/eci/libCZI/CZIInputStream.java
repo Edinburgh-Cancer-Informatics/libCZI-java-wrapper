@@ -9,7 +9,7 @@ import static java.lang.foreign.ValueLayout.*;
 
 import java.lang.foreign.Arena;
 
-public class CZIInputStream {
+public class CZIInputStream implements AutoCloseable {
 
     private LibCziFFM.InputStreamResult streamResult;
     protected CZIInputStream(LibCziFFM.InputStreamResult streamResult) {
@@ -44,6 +44,11 @@ public class CZIInputStream {
 
     public MemorySegment stream() {
         return streamResult.stream();
+    }
+
+    @Override
+    public void close() throws Exception {
+        LibCziFFM.free(streamResult.stream());
     }
     
 }

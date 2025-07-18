@@ -15,9 +15,11 @@ public class CZIInputStreamTest {
     public void testOpenFileAndGetReader() {
         assertTrue(Files.exists(TEST_IMAGE_PATH), "Test image should have been downloaded by Maven.");
 
-        CZIInputStream streamResult = CZIInputStream.createInputStreamFromFileUTF8(TEST_IMAGE_PATH.toString());
-        assertEquals(0, streamResult.errorCode(), "Should open stream without error.");
-        assertNotNull(streamResult.stream(), "Stream handle should not be null.");
-
+        try(CZIInputStream streamResult = CZIInputStream.createInputStreamFromFileUTF8(TEST_IMAGE_PATH.toString())) {
+            assertEquals(0, streamResult.errorCode(), "Should open stream without error.");
+            assertNotNull(streamResult.stream(), "Stream handle should not be null.");
+        } catch (Exception e) {
+            assertFalse(true, "An exception should not have been thrown.");
+        }
     }
 }

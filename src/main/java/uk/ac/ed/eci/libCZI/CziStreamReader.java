@@ -9,7 +9,7 @@ import static java.lang.foreign.ValueLayout.*;
 
 import java.lang.foreign.Arena;
 
-public class CziStreamReader {
+public class CziStreamReader implements AutoCloseable {
     private ReaderResult readerResult;
 
     public class ReaderResult {
@@ -40,22 +40,22 @@ public class CziStreamReader {
     }
 
     public SubBlockStatistics simpleReaderStatistics() {
-        IntRect nullRect = new IntRect(0,0,0,0);
+        IntRect nullRect = new IntRect(0, 0, 0, 0);
         FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS);
 
         MethodHandle getStats = LibCziFFM.GetMethodHandle("libCZI_ReaderGetStatisticsSimple", descriptor);
         try (Arena arena = Arena.ofConfined()) {
             MemorySegment simpleStatsStruct = arena.allocate(SubBlockStatistics.layout());
             int errorCode = (int) getStats.invokeExact(readerResult.reader, simpleStatsStruct);
-            if (errorCode != 0) {                
+            if (errorCode != 0) {
                 return new SubBlockStatistics(0, 0, 0, nullRect, nullRect, null);
             }
             return SubBlockStatistics.createFromMemorySegment(simpleStatsStruct);
-        } catch(Throwable e) {
-            throw new RuntimeException("Failed to call native function libCZI_ReaderGetStatisticsSimple", e);            
+        } catch (Throwable e) {
+            throw new RuntimeException("Failed to call native function libCZI_ReaderGetStatisticsSimple", e);
         }
     }
-    
+
     private void createReader() {
         FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS);
         MethodHandle createReader = LibCziFFM.GetMethodHandle("libCZI_CreateReader", descriptor);
@@ -66,11 +66,11 @@ public class CziStreamReader {
                 readerResult = new ReaderResult(errorCode, MemorySegment.NULL);
             } else {
                 MemorySegment readerHandle = pReader.get(ADDRESS, 0);
-                readerResult = new ReaderResult(errorCode, readerHandle); 
+                readerResult = new ReaderResult(errorCode, readerHandle);
             }
         } catch (Throwable e) {
             throw new RuntimeException("Failed to call native function libCZI_CreateReader", e);
-        }   
+        }
     }
 
     private void readerOpen(CZIInputStream inputStream) {
@@ -85,7 +85,7 @@ public class CziStreamReader {
             readerResult.errorCode = (int) openReader.invokeExact(readerResult.reader, openInfoStruct);
         } catch (Throwable e) {
             throw new RuntimeException("Failed to call native function libCZI_ReaderOpen", e);
-        }        
+        }
     }
 
     public int attachmentCount() {
@@ -115,7 +115,8 @@ public class CziStreamReader {
 
     private AttachmentInfo getAttachmentInfo(int index) {
         FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_INT, ADDRESS);
-        MethodHandle getAttachmentInfo = LibCziFFM.GetMethodHandle("libCZI_ReaderGetAttachmentInfoFromDirectory", descriptor);
+        MethodHandle getAttachmentInfo = LibCziFFM.GetMethodHandle("libCZI_ReaderGetAttachmentInfoFromDirectory",
+                descriptor);
         try (Arena arena = Arena.ofConfined()) {
             MemorySegment attachmentInfoStruct = arena.allocate(AttachmentInfo.layout());
             int errorCode = (int) getAttachmentInfo.invokeExact(readerResult.reader, index, attachmentInfoStruct);
@@ -125,6 +126,17 @@ public class CziStreamReader {
             return AttachmentInfo.createFromMemorySegment(attachmentInfoStruct);
         } catch (Throwable e) {
             throw new RuntimeException("Failed to call native function libCZI_ReaderGetAttachmentInfoFromDirectory");
+        }
+    }
+
+    @Override
+    public void close() throws Exception {
+        FunctionDescriptor descriptor = FunctionDescriptor.ofVoid(ADDRESS);
+        MethodHandle release = LibCziFFM.GetMethodHandle("libCZI_ReleaseReader", descriptor);
+        try {
+            release.invokeExact(readerResult.reader);
+        } catch (Throwable e) {
+            throw new RuntimeException("Failed to call native function libCZI_ReleaseReader", e);
         }
     }
 }
