@@ -28,7 +28,7 @@ public class LibCziFFM {
         }
     }
 
-    public static MethodHandle GetMethodHandle(final String methodName, FunctionDescriptor descriptor) {
+    public static MethodHandle getMethodHandle(final String methodName, FunctionDescriptor descriptor) {
         return Linker
                 .nativeLinker()
                 .downcallHandle(
@@ -44,7 +44,7 @@ public class LibCziFFM {
     // dealing with Intel-based systems. Java's UUID construct expects
     // both long values to be in big-endian (network) order
     //
-    public static UUID GuidToUuidConvert(MemorySegment guidSegment) {
+    public static UUID guidToUuidConvert(MemorySegment guidSegment) {
         byte[] guidBytes = new byte[16];
         guidSegment.asByteBuffer().order(ByteOrder.LITTLE_ENDIAN).get(guidBytes);
 
@@ -77,7 +77,7 @@ public class LibCziFFM {
             return;
         }
         FunctionDescriptor descriptor = FunctionDescriptor.ofVoid(ADDRESS);
-        MethodHandle free = GetMethodHandle("libCZI_Free", descriptor);
+        MethodHandle free = getMethodHandle("libCZI_Free", descriptor);
         try {
             free.invokeExact(segment);
         } catch (Throwable e) {

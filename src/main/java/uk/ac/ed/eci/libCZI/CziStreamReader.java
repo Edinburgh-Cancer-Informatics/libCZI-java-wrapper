@@ -62,7 +62,7 @@ public class CziStreamReader implements AutoCloseable {
         IntRect nullRect = new IntRect(0, 0, 0, 0);
         FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS);
 
-        MethodHandle getStats = LibCziFFM.GetMethodHandle("libCZI_ReaderGetStatisticsSimple", descriptor);
+        MethodHandle getStats = LibCziFFM.getMethodHandle("libCZI_ReaderGetStatisticsSimple", descriptor);
         try (Arena arena = Arena.ofConfined()) {
             MemorySegment simpleStatsStruct = arena.allocate(SubBlockStatistics.layout());
             int errorCode = (int) getStats.invokeExact(readerResult.reader, simpleStatsStruct);
@@ -77,7 +77,7 @@ public class CziStreamReader implements AutoCloseable {
 
     private void createReader() {
         FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS);
-        MethodHandle createReader = LibCziFFM.GetMethodHandle("libCZI_CreateReader", descriptor);
+        MethodHandle createReader = LibCziFFM.getMethodHandle("libCZI_CreateReader", descriptor);
         try (Arena arena = Arena.ofConfined()) {
             MemorySegment pReader = arena.allocate(ADDRESS);
             int errorCode = (int) createReader.invokeExact(pReader);
@@ -97,7 +97,7 @@ public class CziStreamReader implements AutoCloseable {
                 ADDRESS.withName("stream_object"));
 
         FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS);
-        MethodHandle openReader = LibCziFFM.GetMethodHandle("libCZI_ReaderOpen", descriptor);
+        MethodHandle openReader = LibCziFFM.getMethodHandle("libCZI_ReaderOpen", descriptor);
         try (Arena arena = Arena.ofConfined()) {
             MemorySegment openInfoStruct = arena.allocate(readerOpenInfoLayout);
             openInfoStruct.set(ADDRESS, 0, inputStream.stream());
@@ -109,7 +109,7 @@ public class CziStreamReader implements AutoCloseable {
 
     public int attachmentCount() {
         FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS);
-        MethodHandle getAttachmentCount = LibCziFFM.GetMethodHandle("libCZI_ReaderGetAttachmentCount", descriptor);
+        MethodHandle getAttachmentCount = LibCziFFM.getMethodHandle("libCZI_ReaderGetAttachmentCount", descriptor);
         try (Arena arena = Arena.ofConfined()) {
             MemorySegment pCount = arena.allocate(JAVA_INT);
             int errorCode = (int) getAttachmentCount.invokeExact(readerResult.reader, pCount);
@@ -134,7 +134,7 @@ public class CziStreamReader implements AutoCloseable {
 
     private AttachmentInfo getAttachmentInfo(int index) {
         FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_INT, ADDRESS);
-        MethodHandle getAttachmentInfo = LibCziFFM.GetMethodHandle("libCZI_ReaderGetAttachmentInfoFromDirectory",
+        MethodHandle getAttachmentInfo = LibCziFFM.getMethodHandle("libCZI_ReaderGetAttachmentInfoFromDirectory",
                 descriptor);
         try (Arena arena = Arena.ofConfined()) {
             MemorySegment attachmentInfoStruct = arena.allocate(AttachmentInfo.layout());
@@ -151,7 +151,7 @@ public class CziStreamReader implements AutoCloseable {
     @Override
     public void close() throws Exception {
         FunctionDescriptor descriptor = FunctionDescriptor.ofVoid(ADDRESS);
-        MethodHandle release = LibCziFFM.GetMethodHandle("libCZI_ReleaseReader", descriptor);
+        MethodHandle release = LibCziFFM.getMethodHandle("libCZI_ReleaseReader", descriptor);
         try {
             release.invokeExact(readerResult.reader);
         } catch (Throwable e) {

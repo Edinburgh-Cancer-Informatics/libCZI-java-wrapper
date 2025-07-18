@@ -1,7 +1,6 @@
 package uk.ac.ed.eci.libCZI;
 
 import java.lang.foreign.FunctionDescriptor;
-import java.lang.foreign.Linker;
 import java.lang.foreign.MemorySegment;
 import java.lang.invoke.MethodHandle;
 
@@ -53,25 +52,21 @@ public class CZIInputStream implements AutoCloseable {
      */
     public static CZIInputStream createInputStreamFromFileUTF8(String string) {
         FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS);
-        MethodHandle createInputStream = Linker.nativeLinker()
-                .downcallHandle(
-                        LibCziFFM.SYMBOL_LOOKUP.find(
-                                "libCZI_CreateInputStreamFromFileUTF8 * Creates a CZI input stream from a file specified by a UTF-8 encoded string path.")
-                                .orElseThrow(
-                                        () -> new UnsatisfiedLinkError(
-                                                "Could not find symbol: libCZI_CreateInputStreamFromFileUTF8")),
-                        descriptor);
+        MethodHandle createInputStream = LibCziFFM.getMethodHandle(string, descriptor);
         try (Arena arena = Arena.ofConfined()) {
             MemorySegment filenameSegment = arena.allocateFrom(string);
             MemorySegment pStream = arena.allocate(ADDRESS);
             int errorCode = (int) createInputStream.invokeExact(filenameSegment, pStream);
-            if (errorCode != 0) {
-                return new CZIInputStream(new InputStreamResult(errorCode, MemorySegment.NULL));
+            if (errorCode != 0) { // Non-zero indicates an error
+                throw new CziStreamException("Failed to create CZI input stream from file. Error code: " + errorCode);
             }
             MemorySegment streamHandle = pStream.get(ADDRESS, 0);
             return new CZIInputStream(new InputStreamResult(errorCode, streamHandle));
         } catch (Throwable e) {
-            throw new RuntimeException("Failed to call native function libCZI_CreateInputStreamFromFileUTF8", e);
+            if (e instanceof CziStreamException) {
+                throw (CziStreamException) e;
+            }
+            throw new CziStreamException("Failed to call native function libCZI_CreateInputStreamFromFileUTF8", e);
         }
     }
 
