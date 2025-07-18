@@ -1,5 +1,6 @@
 package uk.ac.ed.eci.libCZI;
 
+import java.lang.foreign.Arena;
 import java.lang.foreign.FunctionDescriptor;
 import java.lang.foreign.Linker;
 import java.lang.foreign.MemorySegment;
@@ -14,6 +15,7 @@ import static java.lang.foreign.ValueLayout.ADDRESS;
 import java.io.IOException;
 
 public class LibCziFFM {
+    public static final Arena GLOBAL_ARENA = Arena.ofAuto();
     public static final SymbolLookup SYMBOL_LOOKUP = getSymbolLookup();
     public static final int K_MAX_DIMENSION_COUNT = 9;
     public static final int K_MIN_DIMENSION_COUNT = 1;

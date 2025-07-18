@@ -109,6 +109,11 @@ public class CziStreamReader implements AutoCloseable {
         return attachments;
     }
 
+    public MemorySegment readerHandle() {
+        return readerHandle;
+    }
+
+
     private MemorySegment createReader() {
         FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS);
         MethodHandle createReader = LibCziFFM.getMethodHandle("libCZI_CreateReader", descriptor);
