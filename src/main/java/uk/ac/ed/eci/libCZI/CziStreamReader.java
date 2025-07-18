@@ -5,8 +5,6 @@ import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
 import java.lang.invoke.MethodHandle;
 
-import javax.management.RuntimeErrorException;
-
 import static java.lang.foreign.ValueLayout.*;
 
 import java.lang.foreign.Arena;
@@ -103,6 +101,30 @@ public class CziStreamReader {
             return count;
         } catch (Throwable e) {
             throw new RuntimeException("Failed to call native function libCZI_ReaderGetAttachmentCount");
+        }
+    }
+
+    public AttachmentInfo[] getAttachments() {
+        int count = attachmentCount();
+        AttachmentInfo[] attachments = new AttachmentInfo[count];
+        for (int i = 0; i < count; i++) {
+            attachments[i] = getAttachmentInfo(i);
+        }
+        return attachments;
+    }
+
+    private AttachmentInfo getAttachmentInfo(int index) {
+        FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_INT, ADDRESS);
+        MethodHandle getAttachmentInfo = LibCziFFM.GetMethodHandle("libCZI_ReaderGetAttachmentInfoFromDirectory", descriptor);
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment attachmentInfoStruct = arena.allocate(AttachmentInfo.layout());
+            int errorCode = (int) getAttachmentInfo.invokeExact(readerResult.reader, index, attachmentInfoStruct);
+            if (errorCode != 0) {
+                return null;
+            }
+            return AttachmentInfo.createFromMemorySegment(attachmentInfoStruct);
+        } catch (Throwable e) {
+            throw new RuntimeException("Failed to call native function libCZI_ReaderGetAttachmentInfoFromDirectory");
         }
     }
 }

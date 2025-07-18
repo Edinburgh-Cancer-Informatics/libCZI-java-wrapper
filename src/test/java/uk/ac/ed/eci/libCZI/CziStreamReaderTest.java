@@ -8,40 +8,35 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class CziStreamReaderTest {
     private static final Path TEST_IMAGE_PATH = Paths.get("test-images", "test-image.czi");
+    private CziStreamReader reader;
 
-    @Test
-    public void testOpenReaderFromFileStream() {
+    @BeforeEach
+    public void setup() {
         assertTrue(Files.exists(TEST_IMAGE_PATH), "Test image should have been downloaded by Maven.");
 
         CZIInputStream streamResult = CZIInputStream.createInputStreamFromFileUTF8(TEST_IMAGE_PATH.toString());
-        CziStreamReader reader = CziStreamReader.fromStream(streamResult);
-        assertNotNull(reader, "Reader should not be null.");
+        reader = CziStreamReader.fromStream(streamResult);
+    }
+
+    @Test
+    public void testOpenReaderFromFileStream() {
         assertEquals(0, reader.errorCode(), "Should open reader without error.");
         assertNotNull(reader.reader(), "Reader handle should not be null.");
     }
 
     @Test
     public void testSubBlockCount() {
-        assertTrue(Files.exists(TEST_IMAGE_PATH), "Test image should have been downloaded by Maven.");
-
-        CZIInputStream streamResult = CZIInputStream.createInputStreamFromFileUTF8(TEST_IMAGE_PATH.toString());
-        CziStreamReader reader = CziStreamReader.fromStream(streamResult);
-        assertNotNull(reader, "Reader should not be null.");
         SubBlockStatistics stats = reader.simpleReaderStatistics();
         assertEquals(150, stats.subBlockCount());  
     }
 
     @Test
     public void testBoundingBoxes() {
-        assertTrue(Files.exists(TEST_IMAGE_PATH), "Test image should have been downloaded by Maven.");
-
-        CZIInputStream streamResult = CZIInputStream.createInputStreamFromFileUTF8(TEST_IMAGE_PATH.toString());
-        CziStreamReader reader = CziStreamReader.fromStream(streamResult);
-        assertNotNull(reader, "Reader should not be null.");
         SubBlockStatistics stats = reader.simpleReaderStatistics();
         IntRect bb = stats.boundingBox();
         IntRect bb0 = stats.boundingBoxLayer0();
@@ -60,11 +55,6 @@ public class CziStreamReaderTest {
 
     @Test
     public void testMIndex() {
-        assertTrue(Files.exists(TEST_IMAGE_PATH), "Test image should have been downloaded by Maven.");
-
-        CZIInputStream streamResult = CZIInputStream.createInputStreamFromFileUTF8(TEST_IMAGE_PATH.toString());
-        CziStreamReader reader = CziStreamReader.fromStream(streamResult);
-        assertNotNull(reader, "Reader should not be null.");
         SubBlockStatistics stats = reader.simpleReaderStatistics();
         
         assertEquals(0, stats.minMIndex());
@@ -73,13 +63,16 @@ public class CziStreamReaderTest {
 
     @Test
     public void testAttachmentCount() {
-        assertTrue(Files.exists(TEST_IMAGE_PATH), "Test image should have been downloaded by Maven.");
-
-        CZIInputStream streamResult = CZIInputStream.createInputStreamFromFileUTF8(TEST_IMAGE_PATH.toString());
-        CziStreamReader reader = CziStreamReader.fromStream(streamResult);
-        assertNotNull(reader, "Reader should not be null.");
-        
         int attachmentCount = reader.attachmentCount();
+
         assertEquals(6, attachmentCount);
+    }
+
+    @Test
+    public void testAttachmentInfo() {
+        AttachmentInfo[] attachments = reader.getAttachments();
+
+        assertNotNull(attachments, "Attachments should not be null.");
+        assertEquals(6, attachments.length);        
     }
 }
