@@ -1,3 +1,22 @@
+/**
+ * Represents a CZI stream reader that provides methods to interact with CZI files.
+ * This class allows opening CZI streams, retrieving statistics, accessing attachments,
+ * and managing the native reader object's lifecycle.
+ * <p>
+ * It acts as a wrapper around the native libCZI reader functions, handling memory
+ * management and data conversion between Java and native types.
+ * </p>
+ * <p>
+ * Instances of this class should be created using the {@link #fromStream(CZIInputStream)}
+ * factory method. The reader should be closed after use to release native resources,
+ * ideally using a try-with-resources statement.
+ * </p>
+ *
+ * @see CZIInputStream
+ * @see SubBlockStatistics
+ * @see AttachmentInfo
+ * @author Paul Mitchell
+ */
 package uk.ac.ed.eci.libCZI;
 
 import java.lang.foreign.FunctionDescriptor;
