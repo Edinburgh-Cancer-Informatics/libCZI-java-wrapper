@@ -66,8 +66,8 @@ public class LibCziFFM {
 
         // The last 8 bytes (clock_seq and node) are typically big-endian.
         long lsb = 0;
-        for (int i = 8; i < 16; i++) {
-            lsb = (lsb << 8) | (guidBytes[i] & 0xFF);
+        for (int i = 0; i < 8; i++) {
+            lsb = (lsb << 8) | (guidBytes[8 + i] & 0xFF);
         }
 
         return new UUID(msb, lsb);
