@@ -1,5 +1,14 @@
 package uk.ac.ed.eci.libCZI;
 
+/**
+ * Represents the pixel types supported by the libCZI library.
+ * This enum corresponds to the `PixelType` enum in the libCZI C API.
+ * It defines various pixel formats, including grayscale, BGR, and complex float types,
+ * along with their associated integer values.
+ *
+ * @see <a href="https://zeiss.github.io/libczi/lib/enum_namespacelib_c_z_i_1abf8ce12ab88b06c8b3b47efbb5e2e834.html">PixelType</a>
+ * @author Paul Mitchell
+ */
 public enum PixelType {
     Invalid(0xFF),
     Gray8(0),
@@ -24,15 +33,13 @@ public enum PixelType {
         return value;
     }
 
-    // Optional: A static method to get an enum by its value, similar to C++ casting
     public static PixelType fromValue(int value) {
         for (PixelType type : PixelType.values()) {
             if (type.value == value) {
                 return type;
             }
         }
-        // You might want to throw an IllegalArgumentException here or return null
-        // depending on how you want to handle unknown values.
+
         throw new IllegalArgumentException("Unknown PixelType value: " + value);
     }
 

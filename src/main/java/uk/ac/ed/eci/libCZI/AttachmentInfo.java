@@ -47,7 +47,7 @@ public class AttachmentInfo implements Comparable<AttachmentInfo> {
                 layout().byteOffset(PathElement.groupElement("guid")),
                 16);
 
-        UUID uuid = LibCziFFM.GuidToUuidConvert(guidSegment);
+        UUID uuid = LibCziFFM.guidToUuidConvert(guidSegment);
         String contentFileType = segment.asSlice(
                 layout().byteOffset(PathElement.groupElement("content_file_type"))).getString(0);
         String name;
