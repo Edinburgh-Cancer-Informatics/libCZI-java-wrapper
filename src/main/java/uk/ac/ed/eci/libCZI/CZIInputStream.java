@@ -1,9 +1,9 @@
 package uk.ac.ed.eci.libCZI;
 
 import java.lang.foreign.FunctionDescriptor;
-import java.lang.foreign.Linker;
 import java.lang.foreign.MemorySegment;
 import java.lang.invoke.MethodHandle;
+import java.nio.channels.SeekableByteChannel;
 
 import static java.lang.foreign.ValueLayout.*;
 
@@ -18,12 +18,7 @@ public class CZIInputStream implements AutoCloseable {
 
     public static CZIInputStream createInputStreamFromFileUTF8(String string) {
         FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS);
-                MethodHandle createInputStream = Linker.nativeLinker()
-                .downcallHandle(
-                        LibCziFFM.SYMBOL_LOOKUP.find("libCZI_CreateInputStreamFromFileUTF8").orElseThrow(
-                                () -> new UnsatisfiedLinkError(
-                                        "Could not find symbol: libCZI_CreateInputStreamFromFileUTF8")),
-                        descriptor);
+        MethodHandle createInputStream = LibCziFFM.GetMethodHandle("libCZI_CreateInputStreamFromFileUTF8", descriptor);
         try (Arena arena = Arena.ofConfined()) {
             MemorySegment filenameSegment = arena.allocateFrom(string);
             MemorySegment pStream = arena.allocate(ADDRESS);
@@ -36,6 +31,10 @@ public class CZIInputStream implements AutoCloseable {
         } catch (Throwable e) {
             throw new RuntimeException("Failed to call native function libCZI_CreateInputStreamFromFileUTF8", e);
         }
+    }
+
+    public static CZIInputStream createInputStreamFromJavaStream(SeekableByteChannel stream) {
+        throw new UnsupportedOperationException("Not implemented yet.");
     }
 
     public Integer errorCode() {
