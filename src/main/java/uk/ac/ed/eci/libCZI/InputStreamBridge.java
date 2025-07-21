@@ -9,6 +9,7 @@ import java.lang.foreign.MemorySegment;
 import java.lang.foreign.ValueLayout;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
+import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 
 public class InputStreamBridge implements AutoCloseable {
@@ -27,11 +28,18 @@ public class InputStreamBridge implements AutoCloseable {
         
         
         try {
+            MemorySegment correctlySizedSegment = pv.reinterpret(size);
             channel.position((int) offset);
-            int bytesRead = channel.read(pv.asByteBuffer());
+            ByteBuffer bufferToRead = correctlySizedSegment.asByteBuffer().slice(0, (int) size);            
+            int bytesRead = channel.read(bufferToRead);
+            if (bytesRead == -1) {
+                bytesRead = 0;
+            }
             ptrBytesRead.set(ValueLayout.JAVA_LONG, 0, (long) bytesRead);
             return 0;
         } catch (IOException e) {
+            return -1;
+        } catch (IndexOutOfBoundsException e) {
             return -1;
         }
     }
@@ -45,10 +53,12 @@ public class InputStreamBridge implements AutoCloseable {
         segment.set(ValueLayout.JAVA_LONG, 0, opaque_handle1);
         segment.set(ValueLayout.JAVA_LONG, 8, opaque_handle2);
         try {
-            MethodHandle readCallbackHandle = MethodHandles.lookup().findVirtual(this.getClass(), "readFunctionImplementation", readFunctionDescriptor().toMethodType());
+            MethodHandle readCallbackHandle = MethodHandles.lookup().findVirtual(this.getClass(), "readFunctionImplementation", readFunctionDescriptor().toMethodType())
+                .bindTo(this);
             MemorySegment readCallbackHandleSegment = Linker.nativeLinker().upcallStub(readCallbackHandle, readFunctionDescriptor(), externalStreamArena);
             segment.set(ValueLayout.ADDRESS, 16, readCallbackHandleSegment);
-            MethodHandle closeCallbackHandle = MethodHandles.lookup().findVirtual(this.getClass(), "closeFunctionImplementation", closeFunctionDescriptor().toMethodType());
+            MethodHandle closeCallbackHandle = MethodHandles.lookup().findVirtual(this.getClass(), "closeFunctionImplementation", closeFunctionDescriptor().toMethodType())
+                .bindTo(this);
             MemorySegment closeCallbackHandleSegment = Linker.nativeLinker().upcallStub(closeCallbackHandle, closeFunctionDescriptor(), externalStreamArena);
             segment.set(ValueLayout.ADDRESS, 24, closeCallbackHandleSegment);
         } catch (NoSuchMethodException e) {
@@ -78,7 +88,7 @@ public class InputStreamBridge implements AutoCloseable {
             ValueLayout.JAVA_LONG,      // long offset
             ValueLayout.ADDRESS,        // MemorySegment pv
             ValueLayout.JAVA_LONG,      // long size
-            ValueLayout.ADDRESS,        // MemorySegment ptrBytesRead
+            ValueLayout.ADDRESS.withTargetLayout(ValueLayout.JAVA_LONG),        // MemorySegment ptrBytesRead
             ValueLayout.ADDRESS         // MemorySegment error_info
         );
     }

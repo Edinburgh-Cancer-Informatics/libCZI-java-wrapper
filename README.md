@@ -45,4 +45,9 @@ The native library is expected to be called `CZIAPI` mapped through the Java `ma
 
 Add the generated JAR file as a dependency to your Java project.
 
-### Example
+Because this library interacts directly with native C code using features that require explicit permission, you must run your Java application with the --enable-native-access flag.
+
+For example:
+```bash
+java --enable-native-access=ALL-UNNAMED -jar your-application.jar
+```

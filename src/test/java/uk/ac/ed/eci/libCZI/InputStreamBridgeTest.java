@@ -24,4 +24,16 @@ public class InputStreamBridgeTest {
         CZIInputStream streamResult = CZIInputStream.createInputStreamFromJavaStream(channel);
         assertEquals(0, streamResult.errorCode(), "Should open stream without error.");
     }
+
+    @Test
+    public void testReaderAccess() throws IOException {
+        CZIInputStream streamResult = CZIInputStream.createInputStreamFromJavaStream(channel);
+        CziStreamReader reader = CziStreamReader.fromStream(streamResult);
+
+        SubBlockStatistics stats = reader.simpleReaderStatistics();
+
+        assertEquals(0, stats.minMIndex());
+        assertEquals(26, stats.maxMIndex());
+    }
+        
 }
