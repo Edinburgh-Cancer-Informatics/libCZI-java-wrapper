@@ -39,7 +39,8 @@ public class CZIInputStream implements AutoCloseable {
     private final InputStreamBridge bridge;    
 
     protected CZIInputStream(InputStreamResult streamResult) {
-        this(streamResult, null);
+        this.streamResult = streamResult;
+        this.bridge = null;
     }
 
     /**
