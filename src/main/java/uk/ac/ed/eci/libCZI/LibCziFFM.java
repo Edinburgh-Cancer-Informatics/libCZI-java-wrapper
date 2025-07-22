@@ -26,7 +26,7 @@ public class LibCziFFM {
             NativeUtils.loadLibraryFromJar(libName);
             return SymbolLookup.loaderLookup();
         } catch (IOException e) {
-            throw new UnsatisfiedLinkError("Count not liad CZI library from JAR: " + e.getMessage());
+            throw new UnsatisfiedLinkError("Count not load CZI library from JAR: " + e.getMessage());
         }
     }
 
