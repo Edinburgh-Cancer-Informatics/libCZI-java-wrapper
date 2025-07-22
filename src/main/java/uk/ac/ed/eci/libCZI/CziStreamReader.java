@@ -22,6 +22,7 @@ package uk.ac.ed.eci.libCZI;
 import java.lang.foreign.FunctionDescriptor;
 import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
+import java.lang.foreign.ValueLayout;
 import java.lang.invoke.MethodHandle;
 
 import static java.lang.foreign.ValueLayout.*;
@@ -66,6 +67,31 @@ public class CziStreamReader implements AutoCloseable {
             return pCount.get(JAVA_INT, 0);
         } catch (Throwable e) {
             throw new RuntimeException("Failed to call native function libCZI_ReaderGetAttachmentCount");
+        }
+    }
+
+    public ScenePyramidStatistics pyramidStatistics() {
+        FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS);
+        MethodHandle getPyramidStatistics = LibCziFFM.getMethodHandle("libCZI_ReaderGetPyramidStatistics", descriptor);
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment pSegment = arena.allocate(ValueLayout.ADDRESS);
+            int errorCode = (int) getPyramidStatistics.invokeExact(readerHandle, pSegment);
+            if (errorCode != 0) {
+                throw new CziReaderException("Failed to get pyramid statistics. Error code: " + errorCode);
+            }
+            MemorySegment cString = pSegment.get(ADDRESS, 0);
+            if (cString.equals(MemorySegment.NULL)) {
+                return new ScenePyramidStatistics();
+            }
+            String jsonData = cString.reinterpret(Long.MAX_VALUE).getString(0);
+            LibCziFFM.free(cString);
+
+            return ScenePyramidStatistics.fromJson(jsonData);
+        } catch(Throwable e) {
+            if (e instanceof CziReaderException) {
+                throw (CziReaderException) e;
+            }
+            throw new CziReaderException("Failed to call native function libCZI_ReaderGetPyramidStatistics");
         }
     }
 

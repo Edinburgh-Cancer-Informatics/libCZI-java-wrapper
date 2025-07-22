@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.UUID;
 
 import org.junit.jupiter.api.AfterEach;
@@ -114,5 +115,17 @@ public class CziStreamReaderTest {
         assertEquals(UUID.fromString("6B28C19C-E75A-468D-935A-16A3194B3550"), thumbnail.guid());
         assertEquals("JPG", thumbnail.contentFileType());
         assertEquals("Thumbnail", thumbnail.name());
+    }
+
+    @Test
+    public void testPyramidStatistics() {
+        ScenePyramidStatistics stats = reader.pyramidStatistics();
+        assertNotNull(stats, "Pyramid statistics should not be null.");
+
+        List<PyramidLayerStats> stats0 = stats.getStatsByScene().get("0");
+        PyramidLayerStats stats00 = stats0.get(0);
+        assertEquals(0, stats00.getLayerInfo().getMinificationFactor());
+        assertEquals(0, stats00.getLayerInfo().getPyramidLayerNo());
+        assertEquals(27, stats00.getCount());
     }
 }
