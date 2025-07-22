@@ -47,6 +47,9 @@ Add the generated JAR file as a dependency to your Java project.
 
 Because this library interacts directly with native C code using features that require explicit permission, you must run your Java application with the --enable-native-access flag.
 
+At present, the package only downloadable from our GitHub package repository.  You will need to add ```https://maven.pkg.github.com/Edinburgh-Cancer-Informatics/libCZI-java-wrapper``` to your package repositories.
+
+
 For example:
 ```bash
 java --enable-native-access=ALL-UNNAMED -jar your-application.jar
