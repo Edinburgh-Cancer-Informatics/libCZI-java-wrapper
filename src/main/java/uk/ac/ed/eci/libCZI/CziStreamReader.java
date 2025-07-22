@@ -35,16 +35,6 @@ public class CziStreamReader implements AutoCloseable {
         return new CziStreamReader(streamResult);
     }
 
-    private CziStreamReader(CZIInputStream inputStream) {
-        readerHandle = createReader();
-        try {
-            openReaderWithStream(inputStream);
-        } catch (Exception e) {
-            releaseReader();
-            throw e;
-        }
-    }
-
     public SubBlockStatistics simpleReaderStatistics() {
         FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS);
 
@@ -61,27 +51,6 @@ public class CziStreamReader implements AutoCloseable {
                 throw (CziReaderException) e;
             }
             throw new CziReaderException("Failed to call native function libCZI_ReaderGetStatisticsSimple", e);
-        }
-    }
-
-    private void openReaderWithStream(CZIInputStream inputStream) {
-        MemoryLayout readerOpenInfoLayout = MemoryLayout.structLayout(
-                ADDRESS.withName("stream_object"));
-
-        FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS);
-        MethodHandle openReader = LibCziFFM.getMethodHandle("libCZI_ReaderOpen", descriptor);
-        try (Arena arena = Arena.ofConfined()) {
-            MemorySegment openInfoStruct = arena.allocate(readerOpenInfoLayout);
-            openInfoStruct.set(ADDRESS, 0, inputStream.stream());
-            int errorCode = (int) openReader.invokeExact(readerHandle, openInfoStruct);
-            if (errorCode != 0) {
-                throw new CziReaderException("Failed to open CZI stream with reader. Error code: " + errorCode);
-            }
-        } catch (Throwable e) {
-            if (e instanceof CziReaderException) {
-                throw (CziReaderException) e;
-            }
-            throw new CziReaderException("Failed to call native function libCZI_ReaderOpen", e);
         }
     }
 
@@ -113,6 +82,41 @@ public class CziStreamReader implements AutoCloseable {
         return readerHandle;
     }
 
+    @Override
+    public void close() throws Exception {
+        releaseReader();
+    }
+
+    private CziStreamReader(CZIInputStream inputStream) {
+        readerHandle = createReader();
+        try {
+            openReaderWithStream(inputStream);
+        } catch (Exception e) {
+            releaseReader();
+            throw e;
+        }
+    }
+
+    private void openReaderWithStream(CZIInputStream inputStream) {
+        MemoryLayout readerOpenInfoLayout = MemoryLayout.structLayout(
+                ADDRESS.withName("stream_object"));
+
+        FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS);
+        MethodHandle openReader = LibCziFFM.getMethodHandle("libCZI_ReaderOpen", descriptor);
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment openInfoStruct = arena.allocate(readerOpenInfoLayout);
+            openInfoStruct.set(ADDRESS, 0, inputStream.stream());
+            int errorCode = (int) openReader.invokeExact(readerHandle, openInfoStruct);
+            if (errorCode != 0) {
+                throw new CziReaderException("Failed to open CZI stream with reader. Error code: " + errorCode);
+            }
+        } catch (Throwable e) {
+            if (e instanceof CziReaderException) {
+                throw (CziReaderException) e;
+            }
+            throw new CziReaderException("Failed to call native function libCZI_ReaderOpen", e);
+        }
+    }
 
     private MemorySegment createReader() {
         FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS);
@@ -155,10 +159,5 @@ public class CziStreamReader implements AutoCloseable {
         } catch (Throwable e) {
             throw new RuntimeException("Failed to call native function libCZI_ReleaseReader", e);
         }
-    }
-
-    @Override
-    public void close() throws Exception {
-        releaseReader();
     }
 }
