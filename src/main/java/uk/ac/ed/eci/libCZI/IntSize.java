@@ -1,6 +1,7 @@
 package uk.ac.ed.eci.libCZI;
 
 import java.lang.foreign.MemoryLayout;
+import java.lang.foreign.MemorySegment;
 
 import static java.lang.foreign.ValueLayout.*;
 
@@ -20,5 +21,13 @@ public record IntSize(int w, int h) {
             return MemoryLayout.structLayout(
                     JAVA_INT.withName("w"),
                     JAVA_INT.withName("h"));
-        }    
+        }
+
+        public static IntSize createFromMemorySegment(MemorySegment segment) {
+                return new IntSize(
+                        segment.get(JAVA_INT, layout().byteOffset(PathElement.groupElement("w"))),
+                        segment.get(JAVA_INT, layout().byteOffset(PathElement.groupElement("h")))
+                        );
+        }
+
 }

@@ -5,6 +5,8 @@ import java.lang.foreign.MemoryLayout.PathElement;
 import java.lang.foreign.MemorySegment;
 
 import static java.lang.foreign.ValueLayout.*;
+
+import java.lang.foreign.Arena;
 /**
  * Represents a rectangle defined by integer coordinates and dimensions.
  * This record corresponds to the `IntRect` structure in the libCZI C API.
@@ -30,8 +32,16 @@ public record IntRect(int x, int y, int w, int h) {
                     segment.get(JAVA_INT, layout().byteOffset(PathElement.groupElement("x"))),
                     segment.get(JAVA_INT, layout().byteOffset(PathElement.groupElement("y"))),
                     segment.get(JAVA_INT, layout().byteOffset(PathElement.groupElement("w"))),
-                    
+                    segment.get(JAVA_INT, layout().byteOffset(PathElement.groupElement("h")))
+                    );
+    }
+    public MemorySegment toMemorySegment(Arena arena) {
+        MemorySegment segment = arena.allocate(layout());
+        segment.set(JAVA_INT, 0, x);
+        segment.set(JAVA_INT, 4, y);
+        segment.set(JAVA_INT, 8, w);
+        segment.set(JAVA_INT, 12, h);
 
-segment.get(JAVA_INT, layout().byteOffset(PathElement.groupElement("h"))));
+        return segment;
     }
 }
