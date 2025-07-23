@@ -60,7 +60,7 @@ public class Coordinate {
         for (int i = 0; i < LibCziFFM.K_MAX_DIMENSION_COUNT; i++) {
             value[i] = 0;
         }
-        return new Coordinate(2, new int[LibCziFFM.K_MAX_DIMENSION_COUNT]);
+        return new Coordinate(2, value);
     }
 
     public MemorySegment toMemorySegment(Arena arena) {
