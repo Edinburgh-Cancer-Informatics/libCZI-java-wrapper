@@ -15,9 +15,9 @@ public class BitmapTest {
     public void testGetBitmapInfo() throws Exception {
         IntRect roi = new IntRect(40960, 4096, 1024, 1024);
         try (CZIInputStream stream = CZIInputStream.createInputStreamFromFileUTF8(TEST_IMAGE_PATH.toString());
-             CziStreamReader reader = CziStreamReader.fromStream(stream);
-             SingleChannelTileAccessor accessor = new SingleChannelTileAccessor(reader);
-             Bitmap bitmap = accessor.getBitmap(roi, 1.0f)) {
+                CziStreamReader reader = CziStreamReader.fromStream(stream);
+                SingleChannelTileAccessor accessor = new SingleChannelTileAccessor(reader);
+                Bitmap bitmap = accessor.getBitmap(roi, 1.0f)) {
 
             BitmapInfo info = bitmap.getBitmapInfo();
             assertNotNull(info);
@@ -32,16 +32,16 @@ public class BitmapTest {
         final int WIDTH_HIGHT_IN_BYTES = 1024;
         IntRect roi = new IntRect(40960, 4096, WIDTH_HIGHT_IN_BYTES, WIDTH_HIGHT_IN_BYTES);
         try (CZIInputStream stream = CZIInputStream.createInputStreamFromFileUTF8(TEST_IMAGE_PATH.toString());
-             CziStreamReader reader = CziStreamReader.fromStream(stream);
-             SingleChannelTileAccessor accessor = new SingleChannelTileAccessor(reader);
-             Bitmap bitmap = accessor.getBitmap(roi, 1.0f)) {  
-                
-                BitmapLockInfo lock = bitmap.lock();
-                assertNotNull(lock);
-                assertEquals(WIDTH_HIGHT_IN_BYTES * 3, lock.stride());
-                assertEquals(WIDTH_HIGHT_IN_BYTES * WIDTH_HIGHT_IN_BYTES * 3, lock.size());
+                CziStreamReader reader = CziStreamReader.fromStream(stream);
+                SingleChannelTileAccessor accessor = new SingleChannelTileAccessor(reader);
+                Bitmap bitmap = accessor.getBitmap(roi, 1.0f)) {
 
-                bitmap.unlock();
+            BitmapLockInfo lock = bitmap.lock();
+            assertNotNull(lock);
+            assertEquals(WIDTH_HIGHT_IN_BYTES * 3, lock.stride());
+            assertEquals(WIDTH_HIGHT_IN_BYTES * WIDTH_HIGHT_IN_BYTES * 3, lock.size());
+
+            bitmap.unlock();
         }
     }
 
@@ -50,13 +50,24 @@ public class BitmapTest {
         final int WIDTH_HIGHT_IN_BYTES = 1024;
         IntRect roi = new IntRect(40960, 4096, WIDTH_HIGHT_IN_BYTES, WIDTH_HIGHT_IN_BYTES);
         try (CZIInputStream stream = CZIInputStream.createInputStreamFromFileUTF8(TEST_IMAGE_PATH.toString());
-             CziStreamReader reader = CziStreamReader.fromStream(stream);
-             SingleChannelTileAccessor accessor = new SingleChannelTileAccessor(reader);
-             Bitmap bitmap = accessor.getBitmap(roi, 1.0f)) { 
-                BufferedImage bufferedImage = bitmap.asBufferedImage();
-                assertNotNull(bufferedImage);
-                assertEquals(WIDTH_HIGHT_IN_BYTES, bufferedImage.getWidth());
-                assertEquals(WIDTH_HIGHT_IN_BYTES, bufferedImage.getHeight());
-             }
-    }        
+                CziStreamReader reader = CziStreamReader.fromStream(stream);
+                SingleChannelTileAccessor accessor = new SingleChannelTileAccessor(reader);
+                Bitmap bitmap = accessor.getBitmap(roi, 1.0f)) {
+            BufferedImage bufferedImage = bitmap.asBufferedImage();
+            assertNotNull(bufferedImage);
+            assertEquals(WIDTH_HIGHT_IN_BYTES, bufferedImage.getWidth());
+            assertEquals(WIDTH_HIGHT_IN_BYTES, bufferedImage.getHeight());
+
+            // Check if all the pixels are white, this has been an error in the passed
+            //
+            int result = 0xFFFFFF;
+            for(int x = 0; x < bufferedImage.getWidth(); x++) {
+                for(int y = 0; y < bufferedImage.getHeight(); y++) {
+                    result &= bufferedImage.getRGB(x, y);
+                }
+            }
+
+            assertNotEquals(0xFFFFFF, result, "Image should not be all white.");
+        }
+    }
 }
