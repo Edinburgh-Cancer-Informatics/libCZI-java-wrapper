@@ -20,20 +20,23 @@ public class Bitmap implements AutoCloseable {
         return bitmapHandle;
     }
 
-    public void lock() {
+    public BitmapLockInfo lock() {
         if (bitmapHandle == null || bitmapHandle.address() == 0) {
-            return;
+            return null;
         }
-        FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS);
-        try {
+        FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS);
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment pBitmapLockInfo = arena.allocate(BitmapLockInfo.layout());
             MethodHandle bitmapLock = LibCziFFM.getMethodHandle("libCZI_BitmapLock", descriptor);
-            int errorCode = (int) bitmapLock.invokeExact(bitmapHandle);
+            int errorCode = (int) bitmapLock.invokeExact(bitmapHandle, pBitmapLockInfo);
             if (errorCode != 0) {
                 throw new CziBitmapException("Failed to lock bitmap. Error code: " + errorCode);
             }
+
+            return BitmapLockInfo.createFromMemorySegment(pBitmapLockInfo);
         }
         catch(Throwable e) {
-
+            throw new RuntimeException("Failed to call native function libCZI_LockBitmap", e);
         }
     }
     public void release() {

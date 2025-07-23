@@ -25,4 +25,22 @@ public class BitmapTest {
             assertEquals(PixelType.Bgr24, info.pixelType());
         }
     }
+
+    @Test
+    public void testLockUnlock() throws Exception {
+        final int WIDTH_HIGHT_IN_BYTES = 1024;
+        IntRect roi = new IntRect(40960, 4096, WIDTH_HIGHT_IN_BYTES, WIDTH_HIGHT_IN_BYTES);
+        try (CZIInputStream stream = CZIInputStream.createInputStreamFromFileUTF8(TEST_IMAGE_PATH.toString());
+             CziStreamReader reader = CziStreamReader.fromStream(stream);
+             SingleChannelTileAccessor accessor = new SingleChannelTileAccessor(reader);
+             Bitmap bitmap = accessor.getBitmap(roi, 1.0f)) {  
+                
+                BitmapLockInfo lock = bitmap.lock();
+                assertNotNull(lock);
+                assertEquals(WIDTH_HIGHT_IN_BYTES * 3, lock.stride());
+                assertEquals(WIDTH_HIGHT_IN_BYTES * WIDTH_HIGHT_IN_BYTES * 3, lock.size());
+
+                bitmap.unlock();
+        }
+    }
 }
