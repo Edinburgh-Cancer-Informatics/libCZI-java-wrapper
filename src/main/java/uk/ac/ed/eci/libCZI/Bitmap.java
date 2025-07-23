@@ -1,5 +1,7 @@
 package uk.ac.ed.eci.libCZI;
 
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
 import java.lang.foreign.FunctionDescriptor;
 import java.lang.foreign.MemorySegment;
 import java.lang.invoke.MethodHandle;
@@ -72,6 +74,42 @@ public class Bitmap implements AutoCloseable {
             return BitmapInfo.createFromMemorySegment(pBitmapInfo);
         } catch (Throwable e) {
             throw new RuntimeException("Failed to call native function libCZI_BitmapGetInfo", e);
+        }
+    }
+
+    public BufferedImage asBufferedImage() {
+        FunctionDescriptor descriptor = FunctionDescriptor.of(
+            JAVA_INT, //Return
+            ADDRESS, //Bitmap Handle
+            JAVA_INT, //height
+            JAVA_INT, //width
+            JAVA_INT, //pixel
+            JAVA_INT, //stride
+            ADDRESS);
+        try (Arena arena = Arena.ofConfined()) {
+            BitmapLockInfo lockInfo = lock();
+            BitmapInfo info = getBitmapInfo();
+            BufferedImage bufferedImage = new BufferedImage(info.width(), info.height(), BufferedImage.TYPE_3BYTE_BGR);
+            byte[] buffer = ((DataBufferByte) bufferedImage.getRaster().getDataBuffer()).getData();
+            MemorySegment segment = arena.allocate(buffer.length);
+            MethodHandle copyTo = LibCziFFM.getMethodHandle("libCZI_BitmapCopyTo", descriptor);
+            int errorCode = (int) copyTo.invokeExact(
+                bitmapHandle, 
+                info.width(), 
+                info.height(), 
+                info.pixelType().getValue(), 
+                lockInfo.stride(), 
+                segment);
+            if (errorCode != 0) {
+                throw new CziBitmapException("Failed to copy bitmap. Error code: " + errorCode);
+            }
+            MemorySegment.copy(segment, 0, MemorySegment.ofArray(buffer), 0, segment.byteSize());
+            unlock();
+
+            return bufferedImage;
+        }
+        catch(Throwable e) {
+            throw new RuntimeException("Failed to call native function libCZI_BitmapCopyTo", e);
         }
     }
 
