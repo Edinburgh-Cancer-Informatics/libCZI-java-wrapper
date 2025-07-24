@@ -21,7 +21,7 @@ public class BitmapData implements AutoCloseable {
         this.lockInfo = this.bitmap.lock();
     }
 
-    private int pixelSize() {
+    public int pixelSize() {
         switch (info.pixelType()) {
             case Gray8:
                 return 1;
