@@ -72,4 +72,26 @@ public class BitmapTest {
             assertNotEquals(0xFF, result, "Image should not be all white.");
         }
     }
+
+    @Test
+    public void testBitmapZoom() throws Exception {
+        final int WIDTH_HIGHT_IN_BYTES = 1024;
+        IntRect roi = new IntRect(-123000, 30000, WIDTH_HIGHT_IN_BYTES, WIDTH_HIGHT_IN_BYTES);
+        try (CZIInputStream stream = CZIInputStream.createInputStreamFromFileUTF8(TEST_IMAGE_PATH.toString());
+                CziStreamReader reader = CziStreamReader.fromStream(stream);
+                SingleChannelTileAccessor accessor = new SingleChannelTileAccessor(reader)) {
+                    try (Bitmap bitmap = accessor.getBitmap(roi, 0.25f);
+                            BitmapData data = bitmap.getBitmapData())  {
+
+                                byte[] imageData = data.getBytes();
+                                assertNotEquals(0, imageData.length, "Image data should not be empty.");
+                            }
+                    try (Bitmap bitmap = accessor.getBitmap(roi, 0.5f);
+                            BitmapData data = bitmap.getBitmapData()) {
+                    
+                            byte[] imageData = data.getBytes();
+                            assertNotEquals(0, imageData.length, "Image data should not be empty.");
+                    }
+        }
+    }
 }
