@@ -22,7 +22,7 @@ public class SingleChannelTileAccessor implements AutoCloseable {
 
     @Override
     public void close() throws Exception {
-        free();
+        //free();
     }
 
     private void createAccessor() {
@@ -94,6 +94,9 @@ public class SingleChannelTileAccessor implements AutoCloseable {
     }
 
     private void free() {
+        if (accessorHandle == null || accessorHandle.address() == 0) {
+            return; // it has already gone!
+        }
         FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS);
         MethodHandle free = LibCziFFM.getMethodHandle("libCZI_ReleaseCreateSingleChannelTileAccessor", descriptor);
         try {
