@@ -5,11 +5,12 @@ import java.lang.foreign.FunctionDescriptor;
 import java.lang.foreign.Linker;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SymbolLookup;
+import java.lang.foreign.ValueLayout;
 import java.lang.invoke.MethodHandle;
 import java.nio.ByteOrder;
 import java.util.UUID;
 
-import static java.lang.foreign.ValueLayout.ADDRESS;
+import static java.lang.foreign.ValueLayout.*;
 
 
 import java.io.IOException;
@@ -72,6 +73,21 @@ public class LibCziFFM {
         }
 
         return new UUID(msb, lsb);
+    }
+
+    public static MemorySegment allocate(long size) {
+        FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, JAVA_LONG, ADDRESS);
+        MethodHandle allocate = getMethodHandle("libCZI_AllocateMemory", descriptor);
+        MemorySegment pointer = GLOBAL_ARENA.allocate(ADDRESS);
+        try {
+            int errorCode = (int) allocate.invokeExact(size, pointer);
+            if (errorCode != 0) {
+                throw new RuntimeException("Failed to allocate memory. Error code: " + errorCode);
+            }
+            return pointer.get(ValueLayout.ADDRESS, 0).reinterpret(size); //Derefed
+        } catch (Throwable e) {
+            throw new RuntimeException("Failed to call native function libCZI_AllocateMemory", e);
+        }
     }
 
     public static void free(MemorySegment segment) {
