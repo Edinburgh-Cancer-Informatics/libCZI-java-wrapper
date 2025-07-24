@@ -58,11 +58,11 @@ public class BitmapData implements AutoCloseable {
         return data;
     }
 
-    int stride() {
+    public int stride() {
         return lockInfo.stride();
     }
 
-    int size() {
+    public int size() {
         return lockInfo.size();
     }
 
