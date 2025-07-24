@@ -8,13 +8,17 @@ import java.lang.foreign.MemorySegment;
 public class BitmapData implements AutoCloseable {
 
     private final MemorySegment data;
+    private final Bitmap bitmap;
     private final BitmapInfo info;
+    private final BitmapLockInfo lockInfo;
     private final Arena arena;
 
-    private BitmapData(BitmapInfo info) {        
-        this.info = info;
+    private BitmapData(Bitmap bitmap) {        
+        this.bitmap = bitmap;
+        this.info = bitmap.getBitmapInfo();
         this.arena = Arena.ofConfined();
         this.data = arena.allocate(info.width() * info.height() * pixelSize());
+        this.lockInfo = this.bitmap.lock();
     }
 
     private int pixelSize() {
@@ -46,16 +50,20 @@ public class BitmapData implements AutoCloseable {
         }
     }
 
-    static BitmapData create(BitmapInfo info) {
-        return new BitmapData(info);
+    static BitmapData create(Bitmap bitmap) {
+        return new BitmapData(bitmap);
     }
 
     MemorySegment data() {
         return data;
     }
 
-    public BitmapInfo info() {
-        return info;
+    int stride() {
+        return lockInfo.stride();
+    }
+
+    int size() {
+        return lockInfo.size();
     }
 
     public byte[] getBytes() {
@@ -64,6 +72,7 @@ public class BitmapData implements AutoCloseable {
 
     @Override
     public void close() throws Exception {
+        bitmap.unlock();
         arena.close();
     }
 }

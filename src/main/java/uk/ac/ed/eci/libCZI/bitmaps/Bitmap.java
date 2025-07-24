@@ -82,8 +82,7 @@ public class Bitmap implements AutoCloseable {
 
     public BitmapData getBitmapData() {
         BitmapInfo info = getBitmapInfo();
-        BitmapData data = BitmapData.create(info);
-        BitmapLockInfo lockInfo = lock();
+        BitmapData data = BitmapData.create(this);
         MemorySegment segment = data.data();
 
         FunctionDescriptor descriptor = FunctionDescriptor.of(
@@ -101,12 +100,12 @@ public class Bitmap implements AutoCloseable {
                 info.width(), 
                 info.height(), 
                 info.pixelType().getValue(), 
-                lockInfo.stride(), 
+                data.stride(), 
                 segment);
             if (errorCode != 0) {
                 throw new CziBitmapException("Failed to get bitmap data. Error code: " + errorCode);
             }
-            unlock();
+
             return data;
         }
         catch(Throwable e) {
