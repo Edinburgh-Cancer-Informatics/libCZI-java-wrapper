@@ -1,10 +1,13 @@
-package uk.ac.ed.eci.libCZI;
+package uk.ac.ed.eci.libCZI.bitmaps;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.lang.foreign.FunctionDescriptor;
 import java.lang.foreign.MemorySegment;
 import java.lang.invoke.MethodHandle;
+
+import uk.ac.ed.eci.libCZI.CziBitmapException;
+import uk.ac.ed.eci.libCZI.LibCziFFM;
 
 import static java.lang.foreign.ValueLayout.*;
 
@@ -74,6 +77,40 @@ public class Bitmap implements AutoCloseable {
             return BitmapInfo.createFromMemorySegment(pBitmapInfo);
         } catch (Throwable e) {
             throw new RuntimeException("Failed to call native function libCZI_BitmapGetInfo", e);
+        }
+    }
+
+    public BitmapData getBitmapData() {
+        BitmapInfo info = getBitmapInfo();
+        BitmapData data = BitmapData.create(info);
+        BitmapLockInfo lockInfo = lock();
+        MemorySegment segment = data.data();
+
+        FunctionDescriptor descriptor = FunctionDescriptor.of(
+            JAVA_INT, //Return
+            ADDRESS, //Bitmap Handle
+            JAVA_INT, //height
+            JAVA_INT, //width
+            JAVA_INT, //pixel
+            JAVA_INT, //stride
+            ADDRESS);
+        try {                        
+            MethodHandle copyTo = LibCziFFM.getMethodHandle("libCZI_BitmapCopyTo", descriptor);
+            int errorCode = (int) copyTo.invokeExact(
+                bitmapHandle, 
+                info.width(), 
+                info.height(), 
+                info.pixelType().getValue(), 
+                lockInfo.stride(), 
+                segment);
+            if (errorCode != 0) {
+                throw new CziBitmapException("Failed to get bitmap data. Error code: " + errorCode);
+            }
+            unlock();
+            return data;
+        }
+        catch(Throwable e) {
+            throw new RuntimeException("Failed to call native function libCZI_BitmapGetData", e);
         }
     }
 

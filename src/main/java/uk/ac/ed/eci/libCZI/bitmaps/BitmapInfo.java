@@ -1,10 +1,13 @@
-package uk.ac.ed.eci.libCZI;
+package uk.ac.ed.eci.libCZI.bitmaps;
 
 import static java.lang.foreign.ValueLayout.JAVA_INT;
 
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
+
+import uk.ac.ed.eci.libCZI.IInterop;
+import uk.ac.ed.eci.libCZI.PixelType;
 
 public class BitmapInfo implements IInterop {
 

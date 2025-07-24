@@ -2,11 +2,15 @@ package uk.ac.ed.eci.libCZI;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.awt.image.BufferedImage;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.junit.jupiter.api.Test;
+
+import uk.ac.ed.eci.libCZI.bitmaps.Bitmap;
+import uk.ac.ed.eci.libCZI.bitmaps.BitmapData;
+import uk.ac.ed.eci.libCZI.bitmaps.BitmapInfo;
+import uk.ac.ed.eci.libCZI.bitmaps.BitmapLockInfo;
 
 public class BitmapTest {
     private static final Path TEST_IMAGE_PATH = Paths.get("test-images", "test-image.czi");
@@ -52,20 +56,20 @@ public class BitmapTest {
         try (CZIInputStream stream = CZIInputStream.createInputStreamFromFileUTF8(TEST_IMAGE_PATH.toString());
                 CziStreamReader reader = CziStreamReader.fromStream(stream);
                 SingleChannelTileAccessor accessor = new SingleChannelTileAccessor(reader);
-                Bitmap bitmap = accessor.getBitmap(roi, 0.25f)) {
-            BufferedImage bufferedImage = bitmap.asBufferedImage();
-            assertNotNull(bufferedImage);
+                Bitmap bitmap = accessor.getBitmap(roi, 0.25f);
+                BitmapData data = bitmap.getBitmapData())
+         {
+            byte[] imageData = data.getBytes();
+            assertNotEquals(0, imageData.length, "Image data should not be empty.");
 
             // Check if all the pixels are white, this has been an error in the passed
             //
-            int result = 0xFFFFFF;
-            for(int x = 0; x < bufferedImage.getWidth(); x++) {
-                for(int y = 0; y < bufferedImage.getHeight(); y++) {
-                    result &= bufferedImage.getRGB(x, y);
-                }
+            byte result = (byte) 0xFF;
+            for(int x = 0; x < imageData.length; x++) {
+                result &= imageData[x];
             }
 
-            assertNotEquals(0xFFFFFF, result, "Image should not be all white.");
+            assertNotEquals(0xFF, result, "Image should not be all white.");
         }
     }
 }

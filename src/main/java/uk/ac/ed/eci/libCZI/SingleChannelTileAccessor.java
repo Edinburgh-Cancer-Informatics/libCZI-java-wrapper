@@ -9,6 +9,8 @@ import java.lang.foreign.FunctionDescriptor;
 import java.lang.foreign.MemorySegment;
 import java.lang.invoke.MethodHandle;
 
+import uk.ac.ed.eci.libCZI.bitmaps.Bitmap;
+
 public class SingleChannelTileAccessor implements AutoCloseable {
     private final CziStreamReader reader;
     private MemorySegment accessorHandle;
