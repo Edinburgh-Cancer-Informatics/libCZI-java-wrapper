@@ -76,6 +76,7 @@ public class SingleChannelTileAccessor implements AutoCloseable {
         MethodHandle getBitmap = LibCziFFM.getMethodHandle("libCZI_SingleChannelTileAccessorGet", descriptor);
         try (Arena arena = Arena.ofConfined()) {
             MemorySegment pCoordinate = Coordinate.createC0().toMemorySegment(arena);
+            //MemorySegment pCoordinate = MemorySegment.NULL;
             MemorySegment pRoi = roi.toMemorySegment(arena);
             MemorySegment pOptions = new AccessorOptions(1,1,1, false, true, null).toMemorySegment(arena);            
             MemorySegment pBitmap = arena.allocate(ADDRESS);
@@ -86,7 +87,7 @@ public class SingleChannelTileAccessor implements AutoCloseable {
             MemorySegment bitmapHandle = pBitmap.get(ADDRESS, 0);
             return new Bitmap(bitmapHandle);
         } catch (Throwable e) {
-            throw new RuntimeException("Failed to call native function libCZI_SingleChannelTileAcessorGet");
+            throw new RuntimeException("Failed to call native function libCZI_SingleChannelTileAcessorGet", e);
         }
     }
 

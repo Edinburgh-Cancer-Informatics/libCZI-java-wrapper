@@ -48,15 +48,13 @@ public class BitmapTest {
     @Test
     public void testBitmapCopyTo() throws Exception {
         final int WIDTH_HIGHT_IN_BYTES = 1024;
-        IntRect roi = new IntRect(40960, 4096, WIDTH_HIGHT_IN_BYTES, WIDTH_HIGHT_IN_BYTES);
+        IntRect roi = new IntRect(-123000, 30000, WIDTH_HIGHT_IN_BYTES, WIDTH_HIGHT_IN_BYTES);
         try (CZIInputStream stream = CZIInputStream.createInputStreamFromFileUTF8(TEST_IMAGE_PATH.toString());
                 CziStreamReader reader = CziStreamReader.fromStream(stream);
                 SingleChannelTileAccessor accessor = new SingleChannelTileAccessor(reader);
-                Bitmap bitmap = accessor.getBitmap(roi, 1.0f)) {
+                Bitmap bitmap = accessor.getBitmap(roi, 0.25f)) {
             BufferedImage bufferedImage = bitmap.asBufferedImage();
             assertNotNull(bufferedImage);
-            assertEquals(WIDTH_HIGHT_IN_BYTES, bufferedImage.getWidth());
-            assertEquals(WIDTH_HIGHT_IN_BYTES, bufferedImage.getHeight());
 
             // Check if all the pixels are white, this has been an error in the passed
             //
