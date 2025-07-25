@@ -5,24 +5,26 @@ import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 
+import uk.ac.ed.eci.libCZI.PixelType;
+
 public class BitmapData implements AutoCloseable {
 
     private final MemorySegment data;
-    private final Bitmap bitmap;
-    private final BitmapInfo info;
-    private final BitmapLockInfo lockInfo;
     private final Arena arena;
+    private final int stride;
+    private final int size;
+    private final PixelType pixelType;
 
-    private BitmapData(Bitmap bitmap) {        
-        this.bitmap = bitmap;
-        this.info = bitmap.getBitmapInfo();
+    BitmapData(BitmapInfo bitmapInfo, BitmapLockInfo lockInfo) {        
         this.arena = Arena.ofConfined();
-        this.data = arena.allocate(info.width() * info.height() * pixelSize());
-        this.lockInfo = this.bitmap.lock();
+        this.stride = lockInfo.stride();
+        this.size = lockInfo.size();
+        this.pixelType = bitmapInfo.pixelType();
+        this.data = arena.allocate(bitmapInfo.width() * bitmapInfo.height() * pixelSize());
     }
 
     public int pixelSize() {
-        switch (info.pixelType()) {
+        switch (pixelType) {
             case Gray8:
                 return 1;
             case Gray16:
@@ -46,24 +48,21 @@ public class BitmapData implements AutoCloseable {
             case Gray64Float:
                 return 8;
             default:
-                throw new UnsupportedOperationException("Unsupported pixel type: " + info.pixelType());                
+                throw new UnsupportedOperationException("Unsupported pixel type: " + pixelType);                
         }
-    }
-
-    static BitmapData create(Bitmap bitmap) {
-        return new BitmapData(bitmap);
     }
 
     MemorySegment data() {
         return data;
     }
 
+
     public int stride() {
-        return lockInfo.stride();
+        return stride;
     }
 
     public int size() {
-        return lockInfo.size();
+        return size;
     }
 
     public byte[] getBytes() {
@@ -72,7 +71,6 @@ public class BitmapData implements AutoCloseable {
 
     @Override
     public void close() throws Exception {
-        bitmap.unlock();
         arena.close();
     }
 }
