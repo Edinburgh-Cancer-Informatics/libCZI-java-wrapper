@@ -14,7 +14,7 @@ import uk.ac.ed.eci.libCZI.bitmaps.Bitmap;
 public class SingleChannelTileAccessor implements AutoCloseable {
     private final CziStreamReader reader;
     private MemorySegment accessorHandle;
-
+    
     public SingleChannelTileAccessor(CziStreamReader reader) {
         this.reader = reader;
         createAccessor();
@@ -35,7 +35,7 @@ public class SingleChannelTileAccessor implements AutoCloseable {
             if (errorCode != 0) {
                 throw new CziReaderException("Failed to create single channel tile accessor. Error code: " + errorCode);
             }
-            this.accessorHandle = pAccessor.get(ADDRESS, 0);
+            this.accessorHandle = pAccessor.get(ADDRESS, 0).asReadOnly();
         } catch (Throwable e) {
             if (e instanceof CziReaderException) {
                 throw (CziReaderException) e;
@@ -78,7 +78,6 @@ public class SingleChannelTileAccessor implements AutoCloseable {
         MethodHandle getBitmap = LibCziFFM.getMethodHandle("libCZI_SingleChannelTileAccessorGet", descriptor);
         try (Arena arena = Arena.ofConfined()) {
             MemorySegment pCoordinate = Coordinate.createC0().toMemorySegment(arena);
-            //MemorySegment pCoordinate = MemorySegment.NULL;
             MemorySegment pRoi = roi.toMemorySegment(arena);
             MemorySegment pOptions = new AccessorOptions(1,1,1, false, true, null).toMemorySegment(arena);            
             MemorySegment pBitmap = arena.allocate(ADDRESS);
@@ -86,7 +85,7 @@ public class SingleChannelTileAccessor implements AutoCloseable {
             if (errorCode != 0) {
                 throw new CziReaderException("Failed to get bitmap. Error code: " + errorCode);
             }
-            MemorySegment bitmapHandle = pBitmap.get(ADDRESS, 0);
+            MemorySegment bitmapHandle = pBitmap.get(ADDRESS, 0).asReadOnly();
             return new Bitmap(bitmapHandle);
         } catch (Throwable e) {
             throw new RuntimeException("Failed to call native function libCZI_SingleChannelTileAcessorGet", e);
