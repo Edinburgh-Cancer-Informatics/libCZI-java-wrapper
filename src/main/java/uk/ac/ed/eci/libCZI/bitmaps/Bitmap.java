@@ -60,39 +60,9 @@ public class Bitmap implements AutoCloseable {
             throw new RuntimeException("Failed to copy bitmap data", e);
         }
     }
-    // public BitmapData getBitmapDataOld() {
-    //     FunctionDescriptor descriptor = FunctionDescriptor.of(
-    //         JAVA_INT, //Return
-    //         ADDRESS, //Bitmap Handle
-    //         JAVA_INT, //width
-    //         JAVA_INT, //height
-    //         JAVA_INT, //pixel
-    //         JAVA_INT, //stride
-    //         ADDRESS);
-    //     try (BitmapLock lock = new BitmapLock(bitmapHandle)){                        
-    //         BitmapInfo info = getBitmapInfo();
-    //         BitmapData data = new BitmapData(info, lock);
-    //         MemorySegment segment = data.data();
-    //         MethodHandle copyTo = LibCziFFM.getMethodHandle("libCZI_BitmapCopyTo", descriptor);
-    //         int errorCode = (int) copyTo.invokeExact(
-    //             handle(), 
-    //             info.width(), 
-    //             info.height(), 
-    //             info.pixelType().getValue(), 
-    //             data.stride(), 
-    //             segment);
-    //         if (errorCode != 0) {
-    //             throw new CziBitmapException("Failed to get bitmap data. Error code: " + errorCode);
-    //         }
-    //         return data;
-    //     }
-    //     catch(Throwable e) {
-    //         throw new RuntimeException("Failed to call native function libCZI_BitmapGetData", e);
-    //     }
-    // }
 
     @Override
     public void close() throws Exception {
-      release();
+      //release();
     }
 }
