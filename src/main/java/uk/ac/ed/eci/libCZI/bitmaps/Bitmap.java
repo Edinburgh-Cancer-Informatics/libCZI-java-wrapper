@@ -23,25 +23,6 @@ public class Bitmap implements AutoCloseable {
         return bitmapHandle;
     }
 
-    public BitmapLockInfo lock() {
-        if (bitmapHandle == null || bitmapHandle.address() == 0) {
-            return null;
-        }
-        FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS);
-        try (Arena arena = Arena.ofConfined()) {
-            MemorySegment pBitmapLockInfo = arena.allocate(BitmapLockInfo.layout());
-            MethodHandle bitmapLock = LibCziFFM.getMethodHandle("libCZI_BitmapLock", descriptor);
-            int errorCode = (int) bitmapLock.invokeExact(bitmapHandle, pBitmapLockInfo);
-            if (errorCode != 0) {
-                throw new CziBitmapException("Failed to lock bitmap. Error code: " + errorCode);
-            }
-
-            return BitmapLockInfo.createFromMemorySegment(pBitmapLockInfo);
-        }
-        catch(Throwable e) {
-            throw new RuntimeException("Failed to call native function libCZI_LockBitmap", e);
-        }
-    }
     public void release() {
         if (bitmapHandle == null || bitmapHandle.address() == 0) {
             return;
@@ -51,15 +32,6 @@ public class Bitmap implements AutoCloseable {
             LibCziFFM.getMethodHandle("libCZI_ReleaseBitmap", descriptor).invokeExact(bitmapHandle);
         } catch(Throwable e) {
             throw new RuntimeException("Failed to call native function libCZI_ReleaseBitmap");
-        }
-    }
-
-    public void unlock() {
-        FunctionDescriptor descriptor = FunctionDescriptor.ofVoid(ADDRESS);
-        try {
-            LibCziFFM.getMethodHandle("libCZI_BitmapUnlock", descriptor).invokeExact(bitmapHandle);
-        } catch (Throwable e) {
-            throw new RuntimeException("Failed to call native function libCZI_UnlockBitmap", e);
         }
     }
 
@@ -79,45 +51,48 @@ public class Bitmap implements AutoCloseable {
     }
 
     public BitmapData getBitmapData() {
-        FunctionDescriptor descriptor = FunctionDescriptor.of(
-            JAVA_INT, //Return
-            ADDRESS, //Bitmap Handle
-            JAVA_INT, //width
-            JAVA_INT, //height
-            JAVA_INT, //pixel
-            JAVA_INT, //stride
-            ADDRESS);
-        BitmapLockInfo lockInfo = null;
-        try {                        
+        try (BitmapLock lock = new BitmapLock(bitmapHandle)){                        
             BitmapInfo info = getBitmapInfo();
-            lockInfo = lock();
-            BitmapData data = new BitmapData(info, lockInfo);
-            MemorySegment segment = data.data();
-            MethodHandle copyTo = LibCziFFM.getMethodHandle("libCZI_BitmapCopyTo", descriptor);
-            int errorCode = (int) copyTo.invokeExact(
-                handle(), 
-                info.width(), 
-                info.height(), 
-                info.pixelType().getValue(), 
-                data.stride(), 
-                segment);
-            if (errorCode != 0) {
-                throw new CziBitmapException("Failed to get bitmap data. Error code: " + errorCode);
-            }
+            BitmapData data = new BitmapData(info, lock);
             return data;
         }
         catch(Throwable e) {
-            throw new RuntimeException("Failed to call native function libCZI_BitmapGetData", e);
-        }
-        finally {
-            if (lockInfo != null) {
-                unlock();
-            }
+            throw new RuntimeException("Failed to copy bitmap data", e);
         }
     }
+    // public BitmapData getBitmapDataOld() {
+    //     FunctionDescriptor descriptor = FunctionDescriptor.of(
+    //         JAVA_INT, //Return
+    //         ADDRESS, //Bitmap Handle
+    //         JAVA_INT, //width
+    //         JAVA_INT, //height
+    //         JAVA_INT, //pixel
+    //         JAVA_INT, //stride
+    //         ADDRESS);
+    //     try (BitmapLock lock = new BitmapLock(bitmapHandle)){                        
+    //         BitmapInfo info = getBitmapInfo();
+    //         BitmapData data = new BitmapData(info, lock);
+    //         MemorySegment segment = data.data();
+    //         MethodHandle copyTo = LibCziFFM.getMethodHandle("libCZI_BitmapCopyTo", descriptor);
+    //         int errorCode = (int) copyTo.invokeExact(
+    //             handle(), 
+    //             info.width(), 
+    //             info.height(), 
+    //             info.pixelType().getValue(), 
+    //             data.stride(), 
+    //             segment);
+    //         if (errorCode != 0) {
+    //             throw new CziBitmapException("Failed to get bitmap data. Error code: " + errorCode);
+    //         }
+    //         return data;
+    //     }
+    //     catch(Throwable e) {
+    //         throw new RuntimeException("Failed to call native function libCZI_BitmapGetData", e);
+    //     }
+    // }
 
     @Override
     public void close() throws Exception {
-//        release();
+      release();
     }
 }

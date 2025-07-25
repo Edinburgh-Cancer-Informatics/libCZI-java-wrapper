@@ -8,7 +8,7 @@ import java.lang.foreign.MemorySegment;
 
 import uk.ac.ed.eci.libCZI.IInterop;
 
-public class BitmapLockInfo implements IInterop {
+public class BitmapLockInfo implements IInterop, IBitmapLockInfo {
     private final MemorySegment ptrData;
     private final MemorySegment ptrDataRoi;
     private final int stride;
@@ -33,7 +33,7 @@ public class BitmapLockInfo implements IInterop {
 
     public BitmapLockInfo(MemorySegment ptrData, MemorySegment ptrDataRoi, int stride, int size) {
         this.ptrData = ptrData;
-        this.ptrDataRoi = ptrDataRoi;
+        this.ptrDataRoi = ptrDataRoi.reinterpret(size).asReadOnly();
         this.stride = stride;
         this.size = size;
     }
@@ -46,12 +46,16 @@ public class BitmapLockInfo implements IInterop {
         return size;
     }
 
+    public MemorySegment ptrDataRoi() {
+        return ptrDataRoi;
+    }
+
 
     @Override
     public MemorySegment toMemorySegment(Arena arena) {
         MemorySegment segment = arena.allocate(layout());
-        segment.set(ADDRESS, 0, ptrData);
-        segment.set(ADDRESS, 4, ptrDataRoi);
+        segment.set(ADDRESS, 0, MemorySegment.NULL);
+        segment.set(ADDRESS, 4, MemorySegment.NULL);
         segment.set(JAVA_INT, 8, stride);
         segment.set(JAVA_INT, 12, size);
         return segment;

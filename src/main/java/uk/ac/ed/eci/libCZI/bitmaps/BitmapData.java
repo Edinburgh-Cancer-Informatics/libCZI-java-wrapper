@@ -1,5 +1,6 @@
 package uk.ac.ed.eci.libCZI.bitmaps;
 
+
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 
 import java.lang.foreign.Arena;
@@ -15,12 +16,13 @@ public class BitmapData implements AutoCloseable {
     private final int size;
     private final PixelType pixelType;
 
-    BitmapData(BitmapInfo bitmapInfo, BitmapLockInfo lockInfo) {        
+    BitmapData(BitmapInfo bitmapInfo, BitmapLock lock) {        
         this.arena = Arena.ofConfined();
-        this.stride = lockInfo.stride();
-        this.size = lockInfo.size();
+        this.stride = lock.stride();
+        this.size = lock.size();
         this.pixelType = bitmapInfo.pixelType();
-        this.data = arena.allocate(bitmapInfo.width() * bitmapInfo.height() * pixelSize());
+        this.data = arena.allocate(this.size); 
+        MemorySegment.copy(lock.ptrDataRoi(), 0, this.data, 0, this.size);       
     }
 
     public int pixelSize() {
@@ -50,10 +52,6 @@ public class BitmapData implements AutoCloseable {
             default:
                 throw new UnsupportedOperationException("Unsupported pixel type: " + pixelType);                
         }
-    }
-
-    MemorySegment data() {
-        return data;
     }
 
 
