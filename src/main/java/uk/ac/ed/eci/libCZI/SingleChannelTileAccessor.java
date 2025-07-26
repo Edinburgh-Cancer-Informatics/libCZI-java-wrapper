@@ -14,22 +14,25 @@ import uk.ac.ed.eci.libCZI.bitmaps.Bitmap;
 public class SingleChannelTileAccessor implements AutoCloseable {
     private final CziStreamReader reader;
     private final MemorySegment accessorHandle;
+    private final Arena classArena;
     
     public SingleChannelTileAccessor(CziStreamReader reader) {
         this.reader = reader;
+        this.classArena = Arena.ofConfined();
         this.accessorHandle = createAccessor();
     }
 
     @Override
     public void close() throws Exception {
         free();
+        this.classArena.close();
     }
 
     private MemorySegment createAccessor() {
         FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS);
         MethodHandle createAccessor = LibCziFFM.getMethodHandle("libCZI_CreateSingleChannelTileAccessor", descriptor);
-        try (Arena arena = Arena.ofConfined()) {
-            MemorySegment pAccessor = arena.allocate(ADDRESS);
+        try {
+            MemorySegment pAccessor = classArena.allocate(ADDRESS);
 
             int errorCode = (int) createAccessor.invokeExact(reader.readerHandle(), pAccessor);
             if (errorCode != 0) {
