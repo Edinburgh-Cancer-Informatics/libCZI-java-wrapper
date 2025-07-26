@@ -31,6 +31,7 @@ import java.lang.foreign.Arena;
 
 public class CziStreamReader implements AutoCloseable {
     private MemorySegment readerHandle;
+    private final Arena classArena;
 
     public static CziStreamReader fromStream(CZIInputStream streamResult) {
         return new CziStreamReader(streamResult);
@@ -111,14 +112,17 @@ public class CziStreamReader implements AutoCloseable {
     @Override
     public void close() throws Exception {
         releaseReader();
+        this.classArena.close();
     }
 
     private CziStreamReader(CZIInputStream inputStream) {
+        classArena = Arena.ofConfined();
         readerHandle = createReader();
         try {
             openReaderWithStream(inputStream);
         } catch (Exception e) {
             releaseReader();
+            classArena.close();
             throw e;
         }
     }
@@ -147,8 +151,8 @@ public class CziStreamReader implements AutoCloseable {
     private MemorySegment createReader() {
         FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS);
         MethodHandle createReader = LibCziFFM.getMethodHandle("libCZI_CreateReader", descriptor);
-        try (Arena arena = Arena.ofConfined()) {
-            MemorySegment pReader = arena.allocate(ADDRESS);
+        try  {
+            MemorySegment pReader = classArena.allocate(ADDRESS);
             int errorCode = (int) createReader.invokeExact(pReader);
             if (errorCode != 0) {
                 throw new CziReaderException("Failed to create CZI reader. Error code: " + errorCode);
@@ -184,6 +188,8 @@ public class CziStreamReader implements AutoCloseable {
             release.invokeExact(readerHandle);
         } catch (Throwable e) {
             throw new RuntimeException("Failed to call native function libCZI_ReleaseReader", e);
+        } finally {
+            readerHandle = null;
         }
     }
 }

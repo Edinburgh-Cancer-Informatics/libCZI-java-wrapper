@@ -36,9 +36,12 @@ import java.lang.foreign.Arena;
 public class CZIInputStream implements AutoCloseable {
 
     private InputStreamResult streamResult;
-    private final InputStreamBridge bridge;    
+    private final InputStreamBridge bridge;
+    private final Arena classArena;
+    
 
     protected CZIInputStream(InputStreamResult streamResult) {
+        this.classArena = Arena.ofConfined();
         this.streamResult = streamResult;
         this.bridge = null;
     }
@@ -49,6 +52,7 @@ public class CZIInputStream implements AutoCloseable {
      * lifecycle.
      */
     private CZIInputStream(InputStreamResult streamResult, InputStreamBridge bridge) {
+        this.classArena = Arena.ofConfined();
         this.streamResult = streamResult;
         this.bridge = bridge;
 
@@ -58,9 +62,9 @@ public class CZIInputStream implements AutoCloseable {
     private void connectBridge() {
         FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS);
         MethodHandle inputStreamFromExternal = LibCziFFM.getMethodHandle("libCZI_CreateInputStreamFromExternal", descriptor);
-        try (Arena arena = Arena.ofConfined()) {
+        try {
             MemorySegment externalStreamStruct = bridge.createExternalInputStreamStruct(0, 0);
-            MemorySegment pStream = arena.allocate(ADDRESS);
+            MemorySegment pStream = classArena.allocate(ADDRESS);
             int errorCode = (int) inputStreamFromExternal.invokeExact(externalStreamStruct, pStream);
             if (errorCode != 0) { // Non-zero indicates an error
                 throw new CziStreamException("Failed to create CZI input stream from external stream. Error code: " + errorCode);
@@ -89,9 +93,9 @@ public class CZIInputStream implements AutoCloseable {
     public static CZIInputStream createInputStreamFromFileUTF8(String string) {
         FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS);
         MethodHandle createInputStream = LibCziFFM.getMethodHandle("libCZI_CreateInputStreamFromFileUTF8", descriptor);
-        try (Arena arena = Arena.ofConfined()) {
-            MemorySegment filenameSegment = arena.allocateFrom(string);
-            MemorySegment pStream = arena.allocate(ADDRESS);
+        try (Arena tempArena = Arena.ofConfined()) {
+            MemorySegment filenameSegment = tempArena.allocateFrom(string);
+            MemorySegment pStream = LibCziFFM.GLOBAL_ARENA.allocate(ADDRESS);
             int errorCode = (int) createInputStream.invokeExact(filenameSegment, pStream);
             if (errorCode != 0) { // Non-zero indicates an error
                 throw new CziStreamException("Failed to create CZI input stream from file. Error code: " + errorCode);
@@ -121,9 +125,6 @@ public class CZIInputStream implements AutoCloseable {
 
     @Override
     public void close() throws Exception {
-        if (streamResult != null && streamResult.stream() != null) {
-            LibCziFFM.free(streamResult.stream());
-        }
         // If this stream was created from a Java stream, we also need to close the
         // Arena, which will release the native upcall stubs.
         if (bridge != null) {
