@@ -14,13 +14,22 @@ import uk.ac.ed.eci.libCZI.document.DocumentInfo;
 public class Metadata {
     private MemorySegment handle;
     private Arena classArena;
+    private DocumentInfo documentInfo = null;
 
 
     public Metadata(MemorySegment reader) {
         classArena = Arena.ofConfined();
         handle = getHandleFromReader(reader);
     }
-    public DocumentInfo GetCziDocumentInfo() {
+
+    public DocumentInfo documentInfo() {
+        if (documentInfo == null) {
+            documentInfo = api_getCziDocumentInfo();
+        }
+        return documentInfo;
+    }
+
+    private DocumentInfo api_getCziDocumentInfo() {
         FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS);
         MethodHandle getDocumentInfo = LibCziFFM.getMethodHandle("libCZI_MetadataGetCziDocumentInfo", descriptor);
         try {
@@ -37,7 +46,11 @@ public class Metadata {
     }
     
     public void close() throws Exception {
+        if (documentInfo != null) {
+            documentInfo.close();
+        }
         releaseMetadata();
+        this.classArena.close();
     }
 
     private MemorySegment getHandleFromReader(MemorySegment reader) {
