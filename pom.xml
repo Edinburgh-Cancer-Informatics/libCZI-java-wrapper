@@ -7,7 +7,7 @@
 
   <groupId>uk.ac.ed.eci</groupId>
   <artifactId>libczi-wrapper</artifactId>
-  <version>0.3-SNAPSHOT</version>
+  <version>0.4-SNAPSHOT</version>
 
   <name>libczi-wrapper</name>
   <url>https://github.com/Edinburgh-Cancer-Informatics/libCZI-java-wrapper</url>
