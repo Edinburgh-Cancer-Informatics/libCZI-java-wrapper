@@ -25,6 +25,28 @@ public class DocumentInfo {
     }
     
     //libCZI_CziDocumentInfoGetGeneralDocumentInfo
+    public GeneralDocumentInfo generalDocumentInfo() {
+        return new GeneralDocumentInfo();
+    }
+    
+    //libCZI_CziDocumentInfoGetScalingInfo
+    public ScalingInfo scalingInfo() {
+        return new ScalingInfo();
+    }
+    
+    //libCZI_CziDocumentInfoGetAvailableDimension
+    public AvailableDimensions availableDimensions() {
+        return new AvailableDimensions();
+    }
+    //libCZI_CziDocumentInfoGetDisplaySettings
+    public DisplaySettings displaySettings() {
+        return new DisplaySettings();
+    }
+    //libCZI_CziDocumentInfoGetDimensionInfo
+    public DimensionInfo dimensionInfo() {
+        return new DimensionInfo();
+    }
+    
     private MemorySegment getCziDocumentHandle(MemorySegment handle) {
         FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS);
         MethodHandle getDocumentInfo = LibCziFFM.getMethodHandle("libCZI_MetadataSegmentGetCziDocumentInfo", descriptor);
