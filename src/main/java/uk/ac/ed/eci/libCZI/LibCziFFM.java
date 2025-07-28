@@ -10,6 +10,9 @@ import java.lang.invoke.MethodHandle;
 import java.nio.ByteOrder;
 import java.util.UUID;
 
+import uk.ac.ed.eci.libCZI.metadata.BuildInformation;
+import uk.ac.ed.eci.libCZI.metadata.LibraryVersion;
+
 import static java.lang.foreign.ValueLayout.*;
 
 
@@ -101,5 +104,35 @@ public class LibCziFFM {
         } catch (Throwable e) {
             throw new RuntimeException("Failed to call native function libCZI_Free", e);
         }
+    }
+
+    public static LibraryVersion getLibraryVersion() {
+        FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS);
+        MethodHandle getLibraryVersion = getMethodHandle("libCZI_GetLibCZIVersionInfo", descriptor);
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment pVersion = arena.allocate(LibraryVersion.LAYOUT);
+            int errorCode = (int) getLibraryVersion.invokeExact(pVersion);
+            if (errorCode != 0) {
+                throw new RuntimeException("Failed to get library version. Error code: " + errorCode);
+            }
+            return LibraryVersion.fromMemorySegment(pVersion);
+        } catch (Throwable e) {
+            throw new RuntimeException("Failed to call native function libCZI_GetLibCZIVersionInfo", e);
+        }            
+    }
+
+    public static BuildInformation getLibraryBuildInformation() {
+        FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS);
+        MethodHandle getLibraryVersion = getMethodHandle("libCZI_GetLibCZIBuildInformation", descriptor);
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment pBuild = arena.allocate(BuildInformation.LAYOUT);
+            int errorCode = (int) getLibraryVersion.invokeExact(pBuild);
+            if (errorCode != 0) {
+                throw new RuntimeException("Failed to get library version. Error code: " + errorCode);
+            }
+            return BuildInformation.fromMemorySegment(pBuild);
+        } catch (Throwable e) {
+            throw new RuntimeException("Failed to call native function libCZI_GetLibCZIVersionInfo", e);
+        }         
     }
 }

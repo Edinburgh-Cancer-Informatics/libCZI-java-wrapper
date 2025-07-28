@@ -6,6 +6,8 @@ module uk.ac.ed.eci.libczi.wrapper {
     // accessible to any other module that 'requires' this one.
     exports uk.ac.ed.eci.libCZI;
     exports uk.ac.ed.eci.libCZI.bitmaps;
+    exports uk.ac.ed.eci.libCZI.document;
+    exports uk.ac.ed.eci.libCZI.metadata;
 
     // Required for JSON processing with Jackson.
     // 'transitive' is used because some exported classes are annotated for Jackson,
