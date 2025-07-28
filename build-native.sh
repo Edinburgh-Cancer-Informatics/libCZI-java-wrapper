@@ -3,6 +3,22 @@ set -e  # Exit immediately if a command exits with a non-zero status
 
 # Define the output directory relative to the script's location
 OUTPUT_DIR="$(dirname "$0")/src/main/resources/native"
+LIBRARY_FILE="$OUTPUT_DIR/libCZIAPI.so"
+
+# Check if the library already exists
+if [ -f "$LIBRARY_FILE" ]; then
+  echo "Native library '$LIBRARY_FILE' already exists. Skipping build."
+  exit 0
+fi
+
+LIBRARY_FILE="$OUTPUT_DIR/libCZIAPI.so"
+
+# Check if the library already exists
+if [ -f "$LIBRARY_FILE" ]; then
+  echo "Native library '$LIBRARY_FILE' already exists. Skipping build."
+  exit 0
+fi
+
 INCLUDE_DIR="$(dirname "$0")/src/main/include"
 
 # Create the output directory if it doesn't exist
