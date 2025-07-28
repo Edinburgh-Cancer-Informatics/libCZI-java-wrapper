@@ -14,6 +14,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import uk.ac.ed.eci.libCZI.metadata.Metadata;
+
 public class CziStreamReaderTest {
     private static final Path TEST_IMAGE_PATH = Paths.get("test-images", "test-image.czi");
     private CziStreamReader reader;
@@ -127,5 +129,11 @@ public class CziStreamReaderTest {
         assertEquals(0, stats00.getLayerInfo().getMinificationFactor());
         assertEquals(0, stats00.getLayerInfo().getPyramidLayerNo());
         assertEquals(27, stats00.getCount());
+    }
+
+    @Test
+    public void testMetadataSegment() {
+        Metadata metadata = reader.metadata();
+        assertNotNull(metadata, "Metadata should not be null.");
     }
 }

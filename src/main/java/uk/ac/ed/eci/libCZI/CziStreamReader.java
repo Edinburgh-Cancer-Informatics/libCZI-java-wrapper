@@ -25,6 +25,8 @@ import java.lang.foreign.MemorySegment;
 import java.lang.foreign.ValueLayout;
 import java.lang.invoke.MethodHandle;
 
+import uk.ac.ed.eci.libCZI.metadata.Metadata;
+
 import static java.lang.foreign.ValueLayout.*;
 
 import java.lang.foreign.Arena;
@@ -32,6 +34,8 @@ import java.lang.foreign.Arena;
 public class CziStreamReader implements AutoCloseable {
     private MemorySegment readerHandle;
     private final Arena classArena;
+    private Metadata metadata = null;
+
 
     public static CziStreamReader fromStream(CZIInputStream streamResult) {
         return new CziStreamReader(streamResult);
@@ -105,6 +109,13 @@ public class CziStreamReader implements AutoCloseable {
         return attachments;
     }
 
+    public Metadata metadata() {
+        if (metadata == null) {
+            metadata = new Metadata(readerHandle);
+        }
+        return metadata;
+    }
+
     public MemorySegment readerHandle() {
         return readerHandle;
     }
@@ -112,6 +123,9 @@ public class CziStreamReader implements AutoCloseable {
     @Override
     public void close() throws Exception {
         releaseReader();
+        if (metadata != null) {
+            metadata.close();
+        }
         this.classArena.close();
     }
 
