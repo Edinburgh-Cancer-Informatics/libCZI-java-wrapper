@@ -33,8 +33,8 @@ public class MetadataTest {
     }
 
     @Test
-    public void testMetadata() {
+    public void testMetadata() throws Exception {
         Metadata metadata = reader.metadata();
-        assertNotNull(metadata, "Metadata should not be null.");
+        assertNotNull(metadata, "Metadata should not be null.");        
     }
 }

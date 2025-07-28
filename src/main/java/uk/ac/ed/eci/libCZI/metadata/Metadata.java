@@ -11,7 +11,7 @@ import java.lang.invoke.MethodHandle;
 import uk.ac.ed.eci.libCZI.LibCziFFM;
 import uk.ac.ed.eci.libCZI.document.DocumentInfo;
 
-public class Metadata implements AutoCloseable {
+public class Metadata {
     private MemorySegment handle;
     private Arena classArena;
 
@@ -35,9 +35,7 @@ public class Metadata implements AutoCloseable {
             throw new RuntimeException("Failed to call native function libCZI_MetadataGetCziDocumentInfo", e);
         }
     }
-
-
-    @Override
+    
     public void close() throws Exception {
         releaseMetadata();
     }
