@@ -51,9 +51,9 @@ public class BitmapInfo implements IInterop {
     @Override
     public MemorySegment toMemorySegment(Arena arena) {
         MemorySegment segment = arena.allocate(layout());
-        segment.set(JAVA_INT, 0, width);
-        segment.set(JAVA_INT, 4, height);
-        segment.set(JAVA_INT, 8, pixelType.getValue());
+        segment.set(JAVA_INT, layout().byteOffset(MemoryLayout.PathElement.groupElement("width")), width);
+        segment.set(JAVA_INT, layout().byteOffset(MemoryLayout.PathElement.groupElement("height")), height);
+        segment.set(JAVA_INT, layout().byteOffset(MemoryLayout.PathElement.groupElement("pixelType")), pixelType.getValue());
         return segment;
     }
 
