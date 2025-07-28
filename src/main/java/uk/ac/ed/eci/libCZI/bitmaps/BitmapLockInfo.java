@@ -19,7 +19,9 @@ public class BitmapLockInfo implements IInterop, IBitmapLockInfo {
             ADDRESS.withName("ptrData"), // Not used
             ADDRESS.withName("ptrDataRoi"),
             JAVA_INT.withName("stride"),
-            JAVA_INT.withName("size"));
+            // Align with padding if necessary (often is on 64-bit systems)
+            MemoryLayout.paddingLayout(4),                  
+            JAVA_LONG.withName("size"));
     }
 
     public static BitmapLockInfo createFromMemorySegment(MemorySegment pBitmapLockInfo) {
