@@ -24,25 +24,9 @@ public class Metadata {
 
     public DocumentInfo documentInfo() {
         if (documentInfo == null) {
-            documentInfo = api_getCziDocumentInfo();
+            documentInfo = new DocumentInfo(handle);
         }
         return documentInfo;
-    }
-
-    private DocumentInfo api_getCziDocumentInfo() {
-        FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS);
-        MethodHandle getDocumentInfo = LibCziFFM.getMethodHandle("libCZI_MetadataGetCziDocumentInfo", descriptor);
-        try {
-            MemorySegment pDocumentInfo = classArena.allocate(ADDRESS);
-            int errorCode = (int) getDocumentInfo.invokeExact(handle, pDocumentInfo);
-            if (errorCode != 0) {
-                throw new RuntimeException("Failed to get CZI document info. Error code: " + errorCode);
-            }
-            return new DocumentInfo(pDocumentInfo);
-        }
-        catch (Throwable e) {
-            throw new RuntimeException("Failed to call native function libCZI_MetadataGetCziDocumentInfo", e);
-        }
     }
     
     public void close() throws Exception {
