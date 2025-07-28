@@ -4,6 +4,6 @@ import java.lang.foreign.MemorySegment;
 
 public interface IBitmapLockInfo {
     int stride();
-    int size();
+    long size();
     MemorySegment ptrDataRoi();
 }

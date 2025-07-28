@@ -11,7 +11,7 @@ public class BitmapLockFake implements IBitmapLockInfo {
     }
 
     @Override
-    public int size() {
+    public long size() {
         return 16;
     }
 

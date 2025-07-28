@@ -13,7 +13,7 @@ public class BitmapData implements AutoCloseable {
     private final MemorySegment data;
     private final Arena arena;
     private final int stride;
-    private final int size;
+    private final long size;
     private final PixelType pixelType;
 
     BitmapData(BitmapInfo bitmapInfo, BitmapLock lock) {        
@@ -59,7 +59,7 @@ public class BitmapData implements AutoCloseable {
         return stride;
     }
 
-    public int size() {
+    public long size() {
         return size;
     }
 

@@ -20,7 +20,7 @@ public class BitmapLock implements AutoCloseable {
         return bitmapLockInfo.stride();
     }
 
-    public int size() {
+    public long size() {
         return bitmapLockInfo.size();
     }
 
