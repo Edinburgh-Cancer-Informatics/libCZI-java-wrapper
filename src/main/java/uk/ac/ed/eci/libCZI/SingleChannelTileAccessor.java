@@ -10,6 +10,7 @@ import java.lang.foreign.MemorySegment;
 import java.lang.invoke.MethodHandle;
 
 import uk.ac.ed.eci.libCZI.bitmaps.Bitmap;
+import uk.ac.ed.eci.libCZI.bitmaps.Roi;
 
 public class SingleChannelTileAccessor implements AutoCloseable {
     private final CziStreamReader reader;
@@ -76,12 +77,16 @@ public class SingleChannelTileAccessor implements AutoCloseable {
         }
     }
 
-    public Bitmap getBitmap(IntRect roi, float zoom) {
+    public Bitmap getBitmap(Roi roi, float zoom) {
+        return getBitmapRaw(roi.toIntRect(), zoom);
+    }
+
+    public Bitmap getBitmapRaw(IntRect rawRoi, float zoom) {
         FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, JAVA_FLOAT, ADDRESS, ADDRESS);
         MethodHandle getBitmap = LibCziFFM.getMethodHandle("libCZI_SingleChannelTileAccessorGet", descriptor);
         try (Arena arena = Arena.ofConfined()) {
             MemorySegment pCoordinate = Coordinate.createC0().toMemorySegment(arena);
-            MemorySegment pRoi = roi.toMemorySegment(arena);
+            MemorySegment pRoi = rawRoi.toMemorySegment(arena);
             MemorySegment pOptions = new AccessorOptions(1,1,1, false, true, null).toMemorySegment(arena);            
             MemorySegment pBitmap = arena.allocate(ADDRESS);
             int errorCode = (int) getBitmap.invokeExact(accessorHandle, pCoordinate, pRoi, zoom, pOptions, pBitmap);

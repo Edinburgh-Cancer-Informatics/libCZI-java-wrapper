@@ -27,7 +27,7 @@ public class BitmapDataTest {
 
             // 2. The inner try-with-resources manages the child objects.
             // These will be closed *before* the accessor.
-            try (Bitmap bitmap = accessor.getBitmap(roi, 0.25f);
+            try (Bitmap bitmap = accessor.getBitmapRaw(roi, 0.25f);
                  BitmapData data = bitmap.getBitmapData()) {
 
                 // 3. Perform your assertions here, safely inside the scope.
@@ -56,14 +56,14 @@ public class BitmapDataTest {
             SingleChannelTileAccessor accessor = new SingleChannelTileAccessor(reader)) {
 
             // First zoom level
-            try (Bitmap bitmap = accessor.getBitmap(roi, 0.25f);
+            try (Bitmap bitmap = accessor.getBitmapRaw(roi, 0.25f);
                  BitmapData data = bitmap.getBitmapData())  {
                 byte[] imageData = data.getBytes();
                 assertNotEquals(0, imageData.length, "Image data at 0.25f zoom should not be empty.");
             }
 
             // Second zoom level
-            try (Bitmap bitmap = accessor.getBitmap(roi, 0.5f);
+            try (Bitmap bitmap = accessor.getBitmapRaw(roi, 0.5f);
                  BitmapData data = bitmap.getBitmapData()) {
                 byte[] imageData = data.getBytes();
                 assertNotEquals(0, imageData.length, "Image data at 0.5f zoom should not be empty.");
