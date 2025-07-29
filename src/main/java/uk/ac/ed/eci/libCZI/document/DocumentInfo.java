@@ -62,15 +62,16 @@ public class DocumentInfo {
     
     //libCZI_CziDocumentInfoGetAvailableDimension
     public AvailableDimensions availableDimensions() {
-        return new AvailableDimensions();
+        throw new UnsupportedOperationException("Not implemented yet.");
     }
+
     //libCZI_CziDocumentInfoGetDisplaySettings
     public DisplaySettings displaySettings() {
-        return new DisplaySettings();
+        throw new UnsupportedOperationException("Not implemented yet.");
     }
     //libCZI_CziDocumentInfoGetDimensionInfo
     public DimensionInfo dimensionInfo() {
-        return new DimensionInfo();
+        throw new UnsupportedOperationException("Not implemented yet.");
     }
     
     private MemorySegment getCziDocumentHandle(MemorySegment handle) {
