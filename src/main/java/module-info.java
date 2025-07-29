@@ -14,9 +14,15 @@ module uk.ac.ed.eci.libczi.wrapper {
     // and consumers may want to perform their own JSON operations.
     // This also transitively requires com.fasterxml.jackson.annotation and com.fasterxml.jackson.core.
     requires transitive com.fasterxml.jackson.databind;
+    requires transitive com.fasterxml.jackson.datatype.jsr310;
+    requires transitive com.fasterxml.jackson.annotation;
+    requires transitive com.fasterxml.jackson.core;
+
 
     // The 'opens' directive allows the Jackson databind library to use reflection
     // on the classes within the uk.ac.ed.eci.libCZI package at runtime.
     // This is necessary for Jackson to serialize/deserialize the POJOs.
     opens uk.ac.ed.eci.libCZI to com.fasterxml.jackson.databind;
+    opens uk.ac.ed.eci.libCZI.document to com.fasterxml.jackson.databind;
+
 }

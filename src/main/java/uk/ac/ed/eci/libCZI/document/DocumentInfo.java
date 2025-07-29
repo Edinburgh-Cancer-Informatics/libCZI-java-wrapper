@@ -26,7 +26,22 @@ public class DocumentInfo {
     
     //libCZI_CziDocumentInfoGetGeneralDocumentInfo
     public GeneralDocumentInfo generalDocumentInfo() {
-        return new GeneralDocumentInfo();
+        FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS);
+        MethodHandle getGeneralDocumentInfo = LibCziFFM.getMethodHandle("libCZI_CziDocumentInfoGetGeneralDocumentInfo", descriptor);
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment pGeneralDocumentInfo = arena.allocate(ADDRESS);
+            int errorCode = (int) getGeneralDocumentInfo.invokeExact(cziDocumentHandle, pGeneralDocumentInfo);
+            if (errorCode != 0) {
+                throw new RuntimeException("Failed to get general document info. Error code: " + errorCode);
+            }
+            MemorySegment pString = pGeneralDocumentInfo.get(ADDRESS, 0);
+            String strJson = pString.reinterpret(Long.MAX_VALUE).getString(0);
+            LibCziFFM.free(pString);
+
+            return GeneralDocumentInfo.fromJson(strJson);
+        } catch (Throwable e) {
+            throw new RuntimeException("Failed to call native function libCZI_CziDocumentInfoGetGeneralDocumentInfo", e);
+        }
     }
     
     //libCZI_CziDocumentInfoGetScalingInfo
