@@ -46,7 +46,18 @@ public class DocumentInfo {
     
     //libCZI_CziDocumentInfoGetScalingInfo
     public ScalingInfo scalingInfo() {
-        return new ScalingInfo();
+        FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS);
+        MethodHandle getScalingInfo = LibCziFFM.getMethodHandle("libCZI_CziDocumentInfoGetScalingInfo", descriptor);
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment pScalingInfo = arena.allocate(ScalingInfo.LAYOUT);
+            int errorCode = (int) getScalingInfo.invokeExact(cziDocumentHandle, pScalingInfo);
+            if (errorCode != 0) {
+                throw new RuntimeException("Failed to get scaling info. Error code: " + errorCode);
+            }
+            return ScalingInfo.createFromMemorySegment(pScalingInfo);
+        } catch (Throwable e) {
+            throw new RuntimeException("Failed to call native function libCZI_CziDocumentInfoGetScalingInfo", e);
+        }
     }
     
     //libCZI_CziDocumentInfoGetAvailableDimension

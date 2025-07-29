@@ -1,6 +1,7 @@
 package uk.ac.ed.eci.libCZI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.Test;
 
 import uk.ac.ed.eci.libCZI.document.DocumentInfo;
 import uk.ac.ed.eci.libCZI.document.GeneralDocumentInfo;
+import uk.ac.ed.eci.libCZI.document.ScalingInfo;
 
 public class DocumentInfoTest {
     private static final Path TEST_IMAGE_PATH = Paths.get("test-images", "test-image.czi");
@@ -46,6 +48,8 @@ public class DocumentInfoTest {
     public void testGeneralDocumentInfo() {
         DocumentInfo documentInfo = reader.metadata().documentInfo();
         GeneralDocumentInfo generalDocumentInfo = documentInfo.generalDocumentInfo();
+
+        // CZIcmd -s /images/test-image.czi -c "PrintInformation" -i "GeneralInfo"
         assertNotNull(generalDocumentInfo, "General document info should not be null.");
         assertEquals("zeiss", generalDocumentInfo.username());
 
@@ -53,5 +57,20 @@ public class DocumentInfoTest {
         Instant expectedInstant = OffsetDateTime.parse("2022-10-05T10:06:46.2913112-05:00").toInstant();
         Instant actualInstant = generalDocumentInfo.creationDateTime().toInstant();
         assertEquals(expectedInstant, actualInstant);
+    }
+
+    @Test
+    public void testScalingInfo() {
+        DocumentInfo documentInfo = reader.metadata().documentInfo();
+        ScalingInfo scalingInfo = documentInfo.scalingInfo();
+        assertNotNull(scalingInfo, "Scaling info should not be null.");
+
+        // Values confirmed by inspecting the test image's metadata.
+        // CZIcmd -s /images/test-image.czi -c "PrintInformation" -i "ScalingInfo"
+        assertTrue(scalingInfo.scaleX().isPresent(), "Scale X should be present.");
+        assertEquals(3.45915e-07, scalingInfo.scaleX().get(), 1e-12);
+        assertTrue(scalingInfo.scaleY().isPresent(), "Scale Y should be present.");
+        assertEquals(3.45915e-07, scalingInfo.scaleY().get(), 1e-12);
+        assertFalse(scalingInfo.scaleZ().isPresent(), "Scale Z should not be present (NaN).");
     }
 }
