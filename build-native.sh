@@ -26,7 +26,8 @@ mkdir -p "$OUTPUT_DIR"
 mkdir -p "$INCLUDE_DIR"
 
 # Get the container ID after building and running it
-CONTAINER_ID=$(docker build -t libczi-builder -f Dockerfile.native . && docker run -d libczi-builder)
+docker build -t libczi-builder -f Dockerfile.native .
+CONTAINER_ID=$(docker run -d libczi-builder)
 
 # Check if the container ID is empty, indicating a build or run failure
 if [ -z "$CONTAINER_ID" ]; then
@@ -34,16 +35,13 @@ if [ -z "$CONTAINER_ID" ]; then
   exit 1
 fi
 
+trap 'docker stop "$CONTAINER_ID" && docker rm "$CONTAINER_ID"' EXIT
 # Copy the library from the container. Adjust paths according to your Dockerfile.
 docker cp "$CONTAINER_ID:/build/Src/libCZIAPI/liblibCZIAPI.so" "$OUTPUT_DIR/"
 
 # Copy header files (adjust paths as needed)
 docker cp "$CONTAINER_ID:/build/libczi/Src/libCZIAPI/inc/" "$INCLUDE_DIR/"
 # You might need to copy other headers as well, depending on your needs.
-
-# Stop and remove the container
-docker stop "$CONTAINER_ID"
-docker rm "$CONTAINER_ID"
 
 # Fix library name
 mv "$OUTPUT_DIR/liblibCZIAPI.so" "$OUTPUT_DIR/libCZIAPI.so"

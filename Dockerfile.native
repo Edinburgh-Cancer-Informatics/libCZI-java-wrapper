@@ -1,4 +1,4 @@
-FROM photon:5.0 AS build-env
+FROM docker.io/photon:5.0 AS build-env
 
 WORKDIR /build
 RUN tdnf --assumeyes upgrade && tdnf --assumeyes install zlib-devel libpng-devel rapidjson-devel openssl-devel build-essential cmake git icu shadow
