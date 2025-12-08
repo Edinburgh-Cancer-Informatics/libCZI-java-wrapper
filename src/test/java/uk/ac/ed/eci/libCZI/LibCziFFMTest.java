@@ -7,6 +7,7 @@ import java.lang.foreign.MemorySegment;
 
 import org.junit.jupiter.api.Test;
 
+import uk.ac.ed.eci.libCZI.LibCziFFM;
 import uk.ac.ed.eci.libCZI.metadata.BuildInformation;
 import uk.ac.ed.eci.libCZI.metadata.LibraryVersion;
 
@@ -19,6 +20,7 @@ public class LibCziFFMTest {
         // We just need to ensure no exceptions are thrown during static initialization.
         LibCziFFM.SYMBOL_LOOKUP.toString(); // Access a static field to trigger static init
     }
+
     @Test
     public void testLibraryBasedMemoryManagement() {
         final long size = 4096;
@@ -26,15 +28,15 @@ public class LibCziFFMTest {
         assertNotEquals(0L, segment.address());
         LibCziFFM.free(segment);
     }
-    
-    @Test 
+
+    @Test
     public void testGetLibraryVersion() {
         LibraryVersion version = LibCziFFM.getLibraryVersion();
         assertNotEquals(null, version);
-        assertEquals(0, version.getMajor());
-        assertEquals(66, version.getMinor());
-        assertEquals(0, version.getPatch());
-        assertEquals(0, version.getTweak());
+        assertEquals(0, version.getMajor(), "Major version should be 0");
+        assertEquals(67, version.getMinor(), "Minor version should be 67");
+        assertEquals(3, version.getPatch(), "Patch version should be 3");
+        assertEquals(0, version.getTweak(), "Tweak version should be 0");
     }
 
     @Test
