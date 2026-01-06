@@ -11,7 +11,7 @@ import java.lang.invoke.MethodHandle;
 import uk.ac.ed.eci.libCZI.LibCziFFM;
 
 public class DocumentInfo {
-    private MemorySegment cziDocumentHandle;
+    private final MemorySegment cziDocumentHandle;
     private final Arena classArena;
 
     public DocumentInfo(MemorySegment readerHandle) {
@@ -62,13 +62,27 @@ public class DocumentInfo {
     
     //libCZI_CziDocumentInfoGetAvailableDimension
     public AvailableDimensions availableDimensions() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_INT, ADDRESS);
+        MethodHandle getAvailableDimension = LibCziFFM.getMethodHandle("libCZI_CziDocumentInfoGetAvailableDimension", descriptor);
+        try (Arena arena = Arena.ofConfined()) {
+            var availableDimensionsCount = LibCziFFM.K_MAX_DIMENSION_COUNT + 1;
+            var array = arena.allocate(JAVA_INT, availableDimensionsCount);
+            int errorCode = (int) getAvailableDimension.invokeExact(cziDocumentHandle, availableDimensionsCount, array);
+            if (errorCode != 0) {
+                throw new RuntimeException("Failed to get available dimensions. Error code: " + errorCode);
+            }
+            return AvailableDimensions.createFromMemorySegment(array);
+        } catch (Throwable e) {
+            throw new RuntimeException("Failed to call native function libCZI_CziDocumentInfoGetAvailableDimension", e);
+        }
     }
 
     //libCZI_CziDocumentInfoGetDisplaySettings
     public DisplaySettings displaySettings() {
         throw new UnsupportedOperationException("Not implemented yet.");
     }
+
+
     //libCZI_CziDocumentInfoGetDimensionInfo
     public DimensionInfo dimensionInfo() {
         throw new UnsupportedOperationException("Not implemented yet.");
