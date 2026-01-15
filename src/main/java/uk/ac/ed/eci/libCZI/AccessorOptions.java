@@ -18,13 +18,66 @@ public class AccessorOptions implements IInterop {
     private final boolean useVisibilityCheckOptimization;
     private final String additionalParameters;
 
-    public AccessorOptions(float backGroundColorR, float backGroundColorG, float backGroundColorB, boolean sortByM, boolean useVisibilityCheckOptimization, String additionalParameters) {
+    private AccessorOptions(float backGroundColorR, float backGroundColorG, float backGroundColorB, boolean sortByM, boolean useVisibilityCheckOptimization, String additionalParameters) {
         this.backGroundColorR = backGroundColorR;
         this.backGroundColorG = backGroundColorG;
         this.backGroundColorB = backGroundColorB;
         this.sortByM = sortByM;
         this.useVisibilityCheckOptimization = useVisibilityCheckOptimization;
         this.additionalParameters = additionalParameters;
+    }
+
+    public class Builder {
+        private Builder() {
+            this.backGroundColorR = 1;
+            this.backGroundColorG = 1;
+            this.backGroundColorB = 1;
+            this.sortByM = false;
+            this.useVisibilityCheckOptimization = true;
+            this.additionalParameters = "";
+        }
+        public AccessorOptions build() {
+            return new AccessorOptions(
+                    backGroundColorR,
+                    backGroundColorG,
+                    backGroundColorB,
+                    sortByM,
+                    useVisibilityCheckOptimization,
+                    additionalParameters);
+
+        public Builder background(float f) {
+            this.backgroundColorR = f;
+            this.backgroundColorG = f;
+            this.backgroundColorB = f;
+        }
+        public Builder backgroundR(float f) {
+            this.backgroundColorR = f;
+            return this;
+        }
+        public Builder backgroundG(float f) {
+            this.backgroundColorG = f;
+            return this;
+        }
+        public Builder backgroundB(float f) {
+            this.backgroundColorB = f;
+            return this;
+        }
+        public Builder sortByM(boolean val) {
+            this.sortByM = val;
+            return this;
+        }
+        public Builder useVisibilityCheckOptimization(boolean val) {
+            this.useVisibilityCheckOptimization = val;
+            return this;
+        }
+        public Builder additionalParameters(String params) {
+            this.additionalParameters = params;
+            return this;
+        }
+    }
+
+    public Builder builder() {
+        return new Builder();
     }
 
     public static MemoryLayout layout() {

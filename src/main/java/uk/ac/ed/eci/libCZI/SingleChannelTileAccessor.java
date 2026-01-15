@@ -77,17 +77,25 @@ public class SingleChannelTileAccessor implements AutoCloseable {
         }
     }
 
-    public Bitmap getBitmap(Roi roi, float zoom, int channel, float backgroundColorR, float backgoundColorG, float backgroundColorB) {
-        return getBitmapRaw(roi.toIntRect(), zoom, channel, backgroundColorR, backgoundColorG, backgroundColorB);
+    public Bitmap getBitmap(Roi roi, float zoom) {
+        return getBitmap(roi, zoom, Coordinate.createC0(channel), AccessorOptions.builder().build());
     }
 
-    public Bitmap getBitmapRaw(IntRect rawRoi, float zoom, int channel, float backgroundColorR, float backgoundColorG, float backgroundColorB) {
+    public Bitmap getBitmap(Roi roi, float zoom, Coordinate coordinate, AccessorOptions accessorOptions) {
+        return getBitmapRaw(roi.toIntRect(), zoom, coordinate, accessorOptions);
+    }
+
+    public Bitmap getBitmapRaw(IntRect rawRoi, float zoom) {
+        return getBitmapRaw(rawRoi, zoom, Coordinate.createC0(channel), AccessorOptions.builder().build());
+    }
+
+    public Bitmap getBitmapRaw(IntRect rawRoi, float zoom, Coordinate coordinate, AccessorOptions accessorOptions) {
         FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, JAVA_FLOAT, ADDRESS, ADDRESS);
         MethodHandle getBitmap = LibCziFFM.getMethodHandle("libCZI_SingleChannelTileAccessorGet", descriptor);
         try (Arena arena = Arena.ofConfined()) {
-            MemorySegment pCoordinate = Coordinate.createC0(channel).toMemorySegment(arena);
+            MemorySegment pCoordinate = coordinate.toMemorySegment(arena);
             MemorySegment pRoi = rawRoi.toMemorySegment(arena);
-            MemorySegment pOptions = new AccessorOptions(backgroundColorR, backgoundColorG, backgroundColorB, false, true, null).toMemorySegment(arena);
+            MemorySegment pOptions = accessorOptions.toMemorySegment(arena);
             MemorySegment pBitmap = arena.allocate(ADDRESS);
             int errorCode = (int) getBitmap.invokeExact(accessorHandle, pCoordinate, pRoi, zoom, pOptions, pBitmap);
             if (errorCode != 0) {
