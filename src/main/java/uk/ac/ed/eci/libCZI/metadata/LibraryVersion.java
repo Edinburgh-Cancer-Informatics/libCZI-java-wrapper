@@ -14,7 +14,7 @@ import uk.ac.ed.eci.libCZI.IInterop;
  * For versioning libCZI, SemVer2 (https://semver.org/) is used. 
  * Note that the value of the tweak version number does not 
  * have a meaning (as far as SemVer2 is concerned).
- * @see https://zeiss.github.io/libczi/api/struct_lib_c_z_i_version_info_interop.html
+ * For more info, visit: https://zeiss.github.io/libczi/api/struct_lib_c_z_i_version_info_interop.html
  * 
  */
 public class LibraryVersion implements IInterop {

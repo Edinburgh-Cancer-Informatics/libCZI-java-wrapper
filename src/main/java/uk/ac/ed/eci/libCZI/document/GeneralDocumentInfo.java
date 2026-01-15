@@ -12,7 +12,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
  * from general document information.  This is created
  * from the documentInfo method of the Metadata
  * 
- * @see Metdata
+ * @see uk.ac.ed.eci.libCZI.metadata.Metadata
  * @author Paul D Mitchell
  */
 public class GeneralDocumentInfo {
