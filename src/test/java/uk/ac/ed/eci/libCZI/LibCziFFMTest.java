@@ -43,9 +43,9 @@ public class LibCziFFMTest {
     public void testGetLibraryBuildInformation() {
         BuildInformation buildInfo = LibCziFFM.getLibraryBuildInformation();
         assertNotEquals(null, buildInfo);
-        assertEquals("GNU 12.2.0", buildInfo.getCompilerIdentification());
-        assertEquals("https://github.com/ZEISS/libczi.git", buildInfo.getRepositoryUrl());
-        assertEquals("main~1", buildInfo.getRepositoryBranch());
+        assertEquals("GNU 10.2.1", buildInfo.getCompilerIdentification());
+        assertEquals("https://github.com/ZEISS/libczi", buildInfo.getRepositoryUrl());
+        assertEquals("main", buildInfo.getRepositoryBranch());
         assertEquals("fe30d63426895b1acef5c8d1ca60235867895e11".length(), buildInfo.getRepositoryTag().length());
     }
 }
