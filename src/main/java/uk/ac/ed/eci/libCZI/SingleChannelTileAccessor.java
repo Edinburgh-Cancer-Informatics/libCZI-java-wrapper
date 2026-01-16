@@ -77,18 +77,53 @@ public class SingleChannelTileAccessor implements AutoCloseable {
         }
     }
 
+    /**
+     * Gets the bitmap of the specified region of interest for channel 1 with the default accessor options
+     * 
+     * @param roi The region of interest.
+     * @param zoom A floating-point value representing the zoom factor. Between 0 and 1
+     * @return The bitmap of the specified region of interest.
+    */
+
     public Bitmap getBitmap(Roi roi, float zoom) {
-        return getBitmap(roi, zoom, Coordinate.createC0(channel), AccessorOptions.builder().build());
+        return getBitmap(roi, zoom, Coordinate.createC0(), new AccessorOptions.Builder().build());
     }
 
+    /**
+     * Gets the bitmap of the specified region of interest for a given channel and accessor options.
+     * 
+     * @param roi The region of interest.
+     * @param zoom A floating-point value representing the zoom factor. Between 0 and 1
+     * @param coordinate The coordinate of the channel.
+     * @param accessorOptions The options for accessing the CZI file.
+     * @return The bitmap of the specified region of interest.
+    */
     public Bitmap getBitmap(Roi roi, float zoom, Coordinate coordinate, AccessorOptions accessorOptions) {
         return getBitmapRaw(roi.toIntRect(), zoom, coordinate, accessorOptions);
     }
 
+    /**
+     * Gets the bitmap of the specified region of interest for a given channel and accessor options.
+     * 
+     * @param rawRoi The region of interest.
+     * @param zoom A floating-point value representing the zoom factor. Between 0 and 1
+     * @param coordinate The coordinate of the channel.
+     * @param accessorOptions The options for accessing the CZI file.
+     * @return The bitmap of the specified region of interest.
+    */
     public Bitmap getBitmapRaw(IntRect rawRoi, float zoom) {
-        return getBitmapRaw(rawRoi, zoom, Coordinate.createC0(channel), AccessorOptions.builder().build());
+        return getBitmapRaw(rawRoi, zoom, Coordinate.createC0(), new AccessorOptions.Builder().build());
     }
 
+    /**
+     * Gets the bitmap of the specified region of interest for a given channel and accessor options.
+     * 
+     * @param rawRoi The region of interest.
+     * @param zoom A floating-point value representing the zoom factor. Between 0 and 1
+     * @param coordinate The coordinate of the channel.
+     * @param accessorOptions The options for accessing the CZI file.
+     * @return The bitmap of the specified region of interest.
+    */
     public Bitmap getBitmapRaw(IntRect rawRoi, float zoom, Coordinate coordinate, AccessorOptions accessorOptions) {
         FunctionDescriptor descriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, JAVA_FLOAT, ADDRESS, ADDRESS);
         MethodHandle getBitmap = LibCziFFM.getMethodHandle("libCZI_SingleChannelTileAccessorGet", descriptor);
