@@ -55,12 +55,15 @@ public class Coordinate {
         return MemoryLayout.structLayout(JAVA_INT, MemoryLayout.sequenceLayout(LibCziFFM.K_MAX_DIMENSION_COUNT, JAVA_INT));
     }
 
-    public static Coordinate createC0(int channel) {
+    /**
+     * Creates a coordinate with system 'C' zero set.
+     * @return Coordinate
+     */
+    public static Coordinate createC0() {
         int[] value = new int[LibCziFFM.K_MAX_DIMENSION_COUNT];
         for (int i = 0; i < LibCziFFM.K_MAX_DIMENSION_COUNT; i++) {
             value[i] = 0;
-        }
-        value[0] = channel;
+        }        
         return new Coordinate(2, value);
     }
 
