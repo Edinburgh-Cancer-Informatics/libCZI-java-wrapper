@@ -10,7 +10,16 @@ import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemoryLayout.PathElement;
 import java.lang.foreign.MemorySegment;
 
+/**
+ * A class representing options for accessing CZI files.
+   For more info, see https://zeiss.github.io/libczi/api/struct_accessor_options_interop.html
+   Defaults are white for the background (1,1,1)
+   Sort by M-index false
+   Use visibility check optimization true
+ */
+
 public class AccessorOptions implements IInterop {
+    // Fields reflect snake_case given in API documentation from Zeiss
     private final float backGroundColorR;
     private final float backGroundColorG;
     private final float backGroundColorB;
@@ -27,51 +36,62 @@ public class AccessorOptions implements IInterop {
         this.additionalParameters = additionalParameters;
     }
 
-    public class Builder {
-        private Builder() {
-            this.backGroundColorR = 1;
-            this.backGroundColorG = 1;
-            this.backGroundColorB = 1;
-            this.sortByM = false;
-            this.useVisibilityCheckOptimization = true;
-            this.additionalParameters = "";
-        }
-        public AccessorOptions build() {
-            return new AccessorOptions(
-                    backGroundColorR,
-                    backGroundColorG,
-                    backGroundColorB,
-                    sortByM,
-                    useVisibilityCheckOptimization,
-                    additionalParameters);
+    private AccessorOptions(Builder builder) {
+        this.backGroundColorR = builder.backGroundColorR;
+        this.backGroundColorG = builder.backGroundColorG;
+        this.backGroundColorB = builder.backGroundColorB;
+        this.sortByM = builder.sortByM;
+        this.useVisibilityCheckOptimization = builder.useVisibilityCheckOptimization;
+        this.additionalParameters = builder.additionalParameters;
+    }
 
+    public static class Builder {
+        private float backGroundColorR = 1;
+        private float backGroundColorG = 1;
+        private float backGroundColorB = 1;
+        private boolean sortByM = false;
+        private boolean useVisibilityCheckOptimization = true;
+        private String additionalParameters = "";
+
+        public AccessorOptions build() {
+            return new AccessorOptions(this);
+        }
+        
         public Builder background(float f) {
-            this.backgroundColorR = f;
-            this.backgroundColorG = f;
-            this.backgroundColorB = f;
+            this.backGroundColorR = f;
+            this.backGroundColorG = f;
+            this.backGroundColorB = f;
+
+            return this;
         }
         public Builder backgroundR(float f) {
-            this.backgroundColorR = f;
+            this.backGroundColorR = f;
+
             return this;
         }
         public Builder backgroundG(float f) {
-            this.backgroundColorG = f;
+            this.backGroundColorG = f;
+
             return this;
         }
         public Builder backgroundB(float f) {
-            this.backgroundColorB = f;
+            this.backGroundColorB = f;
+
             return this;
         }
         public Builder sortByM(boolean val) {
             this.sortByM = val;
+
             return this;
         }
         public Builder useVisibilityCheckOptimization(boolean val) {
             this.useVisibilityCheckOptimization = val;
+
             return this;
         }
         public Builder additionalParameters(String params) {
             this.additionalParameters = params;
+
             return this;
         }
     }
