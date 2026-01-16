@@ -107,8 +107,6 @@ public class SingleChannelTileAccessor implements AutoCloseable {
      * 
      * @param rawRoi The region of interest.
      * @param zoom A floating-point value representing the zoom factor. Between 0 and 1
-     * @param coordinate The coordinate of the channel.
-     * @param accessorOptions The options for accessing the CZI file.
      * @return The bitmap of the specified region of interest.
     */
     public Bitmap getBitmapRaw(IntRect rawRoi, float zoom) {
