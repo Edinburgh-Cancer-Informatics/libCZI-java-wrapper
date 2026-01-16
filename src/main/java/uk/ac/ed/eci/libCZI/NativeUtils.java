@@ -90,11 +90,6 @@ public class NativeUtils {
 
     static String mapSharedLibraryName(String libName) {
         if (getOS() == MACOS) {
-            if (libName.startsWith("lib")
-                    && (libName.endsWith(".dylib")
-                    || libName.endsWith(".jnilib"))) {
-                return libName;
-            }
             String name = System.mapLibraryName(libName);
             // On MacOSX, System.mapLibraryName() gives .jnilib; we want .dylib
             if (name.endsWith(".jnilib")) {
