@@ -12,6 +12,18 @@
   <name>libczi-wrapper</name>
   <url>https://github.com/Edinburgh-Cancer-Informatics/libCZI-java-wrapper</url>
 
+  <repositories>
+    <repository>
+        <id>scijava-snapshots</id>
+        <name>SciJava Maven snapshots</name>
+        <url>https://maven.scijava.org/content/repositories/snapshots</url>
+    </repository>
+      <repository>
+          <id>scijava-releases</id>
+          <name>SciJava Maven releases</name>
+          <url>https://maven.scijava.org/content/repositories/releases</url>
+      </repository>
+  </repositories>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.release>22</maven.compiler.release>
@@ -52,6 +64,11 @@
       <artifactId>jackson-datatype-jsr310</artifactId>
       <version>2.19.2</version>
     </dependency>
+      <dependency>
+          <groupId>io.github.qupath</groupId>
+          <artifactId>libCZI</artifactId>
+          <version>0.67.4-SNAPSHOT</version>
+      </dependency>
   </dependencies>
 
   <build>
@@ -62,9 +79,6 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>3.2.5</version>  <!-- Or the latest version -->
-          <configuration>
-            <argLine>--enable-native-access=ALL-UNNAMED -Djava.library.path=${project.basedir}/src/main/resources/native</argLine>
-          </configuration>
         </plugin>
         <!-- clean lifecycle, see
         https://maven.apache.org/ref/current/maven-core/lifecycles.html#clean_Lifecycle -->
@@ -150,25 +164,6 @@
                        skipexisting="true"
                        verbose="true"/>
                   <echo>Test image is available at ${project.basedir}/test-images/test-image.czi</echo>
-                </target>
-              </configuration>
-            </execution>
-            <execution>
-              <?m2e execute onConfiguration,onIncremental?>
-              <id>build-native</id>
-              <phase>generate-resources</phase> <!-- Or an appropriate phase, like "compile" -->
-              <goals>
-                <goal>run</goal>
-              </goals>
-              <configuration>
-                <target>
-                  <exec executable="./build-native.sh" dir="${project.basedir}" failonerror="true">
-                    <!-- If you're on Windows, use build_native.bat instead -->
-                    <!--  <exec executable="build_native.bat" dir="${project.basedir}"
-                    failonerror="true"> -->
-                    <env key="OUTPUT_DIR" value="${project.basedir}/src/main/resources/native" />
-                    <!-- You can pass other environment variables to your script here -->
-                  </exec>
                 </target>
               </configuration>
             </execution>

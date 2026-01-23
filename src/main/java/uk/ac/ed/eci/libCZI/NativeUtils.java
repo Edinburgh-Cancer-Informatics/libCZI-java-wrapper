@@ -7,25 +7,98 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
+
+import static uk.ac.ed.eci.libCZI.NativeUtils.Architecture.AARCH64;
+import static uk.ac.ed.eci.libCZI.NativeUtils.Architecture.X86_64;
+import static uk.ac.ed.eci.libCZI.NativeUtils.OS.LINUX;
+import static uk.ac.ed.eci.libCZI.NativeUtils.OS.MACOS;
+import static uk.ac.ed.eci.libCZI.NativeUtils.OS.WINDOWS;
+
+
 public class NativeUtils {
 
-    public static void loadLibraryFromJar(String libraryFileName) throws IOException {
-        // Prepend "native/" to the library file name as it is located in the "native" folder
-        String fullLibraryFileName = "native/" + libraryFileName;
+    private static final String RESOURCE_PREFIX = getPrefix();
 
-        // Prepare a destination file
-        Path tempDir = Files.createTempDirectory("native-libs");
-        File tempLib = tempDir.resolve(libraryFileName).toFile();
-        tempLib.deleteOnExit(); // Delete the file when JVM exits (optional, for cleanup)
-
-        try (InputStream in = NativeUtils.class.getClassLoader().getResourceAsStream(fullLibraryFileName)) {
-            if (in == null) {
-                throw new IOException("Library not found in JAR: " + fullLibraryFileName);
-            }
-            Files.copy(in, tempLib.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        }
-
-        System.load(tempLib.getAbsolutePath());
+    enum OS {
+        LINUX,
+        WINDOWS,
+        MACOS
     }
+
+    enum Architecture {
+        AARCH64("aarch64"),
+        X86_64("x86-64");
+        private String string;
+
+        Architecture(String string) {
+            this.string = string;
+        }
+        @Override
+        public String toString() {
+            return string;
+        }
+    }
+
+    private static String getPrefix() {
+        return getOS().toString().toLowerCase() + "-" + getArch().toString();
+    }
+
+    private static OS getOS() {
+        var name = System.getProperty("os.name").toLowerCase();
+        if (name.contains("linux"))
+            return LINUX;
+        if (name.contains("windows"))
+            return WINDOWS;
+        if (name.contains("darwin") || name.contains("mac"))
+            return MACOS;
+        throw new IllegalStateException("Unexpected value: " + name);
+    }
+
+    private static Architecture getArch() {
+        return switch (System.getProperty("os.arch")) {
+            case "aarch64" -> AARCH64;
+            case "amd64" -> X86_64;
+            default -> throw new IllegalStateException("Unexpected value: " + System.getProperty("os.arch"));
+        };
+    }
+
+    public static void loadLibraryFromJar(String libraryFileName) throws IOException {
+        var loader = NativeUtils.class.getClassLoader();
+        String libname = mapSharedLibraryName(libraryFileName);
+        try {
+            // first try to load from PATH/LD_LIBRARY_PATH/DYLD_LIBRARY_PATH so users can replace the CZI binary if desired
+            System.loadLibrary(libraryFileName);
+        } catch (UnsatisfiedLinkError e) {
+            // system version failed, so load the version that we bundle
+            String resourcePath = RESOURCE_PREFIX + "/" + libname;
+            if (resourcePath.startsWith("/")) {
+                resourcePath = resourcePath.substring(1);
+            }
+            // Prepare a destination file
+            Path tempDir = Files.createTempDirectory("native-libs");
+            File tempLib = tempDir.resolve(libname).toFile();
+            tempLib.deleteOnExit(); // Delete the file when JVM exits (optional, for cleanup)
+            try (InputStream in = loader.getResourceAsStream(resourcePath)) {
+                if (in == null) {
+                    throw new IOException("Library not found in JAR: " + libname);
+                }
+                Files.copy(in, tempLib.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            }
+            System.load(tempLib.getAbsolutePath());
+        }
+    }
+
+    static String mapSharedLibraryName(String libName) {
+        if (getOS() == MACOS) {
+            String name = System.mapLibraryName(libName);
+            // On MacOSX, System.mapLibraryName() gives .jnilib; we want .dylib
+            if (name.endsWith(".jnilib")) {
+                return name.substring(0, name.lastIndexOf(".jnilib")) + ".dylib";
+            }
+            return name;
+        }
+        return System.mapLibraryName(libName);
+    }
+
 }
 

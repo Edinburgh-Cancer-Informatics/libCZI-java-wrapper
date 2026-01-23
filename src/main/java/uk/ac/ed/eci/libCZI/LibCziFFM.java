@@ -25,12 +25,12 @@ public class LibCziFFM {
     public static final int K_MIN_DIMENSION_COUNT = 1;
 
     private static SymbolLookup getSymbolLookup() {
-        String libName = System.mapLibraryName("CZIAPI");
+        String libName = "libCZIAPI";
         try {
             NativeUtils.loadLibraryFromJar(libName);
             return SymbolLookup.loaderLookup();
         } catch (IOException e) {
-            throw new UnsatisfiedLinkError("Count not load CZI library from JAR: " + e.getMessage());
+            throw new UnsatisfiedLinkError("Count not load CZI library from JAR: " + e);
         }
     }
 
