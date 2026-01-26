@@ -28,7 +28,7 @@ public class AttachmentReader implements AutoCloseable {
     private MemorySegment attachmentHandle;
     private MemorySegment readerHandle;
     private int index;
-    private static int MAX_SIZE = 1048576; //(2^20)
+    private static int MAX_SIZE = 33554432; //(2^25)
 
 
 	public static AttachmentReader fromReader(CziStreamReader reader, int i) {

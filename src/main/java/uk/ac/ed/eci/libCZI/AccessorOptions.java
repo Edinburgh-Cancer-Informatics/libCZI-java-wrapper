@@ -53,6 +53,8 @@ public class AccessorOptions implements IInterop {
         private boolean useVisibilityCheckOptimization = true;
         private String additionalParameters = "";
 
+        private Builder() {}
+
         public AccessorOptions build() {
             return new AccessorOptions(this);
         }
@@ -96,7 +98,7 @@ public class AccessorOptions implements IInterop {
         }
     }
 
-    public Builder builder() {
+    public static Builder builder() {
         return new Builder();
     }
 
