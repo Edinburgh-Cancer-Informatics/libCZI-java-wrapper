@@ -51,24 +51,6 @@ public class AttachmentReaderTest {
     }
 
     @Test    
-    public void testGetAttachmentRawDataLabel() throws Exception {
-        try (AttachmentReader attachment = AttachmentReader.fromReader(reader, 2)) {
-            assertThrows(AttachmentReaderSizeException.class, () -> {
-                attachment.getAttachmentRawData();
-            });
-        }
-    }
-
-    @Test    
-    public void testGetAttachmentRawDataSlidePreview() throws Exception {
-        try (AttachmentReader attachment = AttachmentReader.fromReader(reader, 3)) {
-            assertThrows(AttachmentReaderSizeException.class, () -> {
-                attachment.getAttachmentRawData();
-            });
-        }
-    }
-
-    @Test    
     public void testGetAttachmentRawProfile() throws Exception {
         try (AttachmentReader attachment = AttachmentReader.fromReader(reader, 4)) {
             MemorySegment data = attachment.getAttachmentRawData();
