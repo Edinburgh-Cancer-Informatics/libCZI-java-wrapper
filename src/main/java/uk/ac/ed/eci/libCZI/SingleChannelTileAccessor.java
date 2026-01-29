@@ -86,7 +86,7 @@ public class SingleChannelTileAccessor implements AutoCloseable {
     */
 
     public Bitmap getBitmap(Roi roi, float zoom) {
-        return getBitmap(roi, zoom, Coordinate.createC0(), new AccessorOptions.Builder().build());
+        return getBitmap(roi, zoom, Coordinate.createC0(), AccessorOptions.builder().build());
     }
 
     /**
@@ -110,7 +110,7 @@ public class SingleChannelTileAccessor implements AutoCloseable {
      * @return The bitmap of the specified region of interest.
     */
     public Bitmap getBitmapRaw(IntRect rawRoi, float zoom) {
-        return getBitmapRaw(rawRoi, zoom, Coordinate.createC0(), new AccessorOptions.Builder().build());
+        return getBitmapRaw(rawRoi, zoom, Coordinate.createC0(), AccessorOptions.builder().build());
     }
 
     /**
