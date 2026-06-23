@@ -35,7 +35,7 @@ public class LibCziFFMTest {
         assertNotEquals(null, version);
         assertEquals(0, version.getMajor(), "Major version should be 0");
         assertEquals(67, version.getMinor(), "Minor version should be 67");
-        assertEquals(3, version.getPatch(), "Patch version should be 3");
+        assertEquals(4, version.getPatch(), "Patch version should be 4");
         assertEquals(0, version.getTweak(), "Tweak version should be 0");
     }
 
